@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>点呼SaaS — ダッシュボード</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;color:#0f1c35}
+.header{background:#fff;border-bottom:1px solid #e2e8f4;padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.header-left{display:flex;align-items:center;gap:12px}
+.logo{font-size:.95rem;font-weight:700;color:#0f1c35;letter-spacing:-.3px}
+.company-badge{background:#e8f0fe;color:#1a5cd4;font-size:.75rem;font-weight:600;padding:3px 10px;border-radius:20px}
+.header-right{display:flex;align-items:center;gap:10px}
+.logout-btn{background:none;border:1px solid #d8e2f0;border-radius:8px;padding:6px 14px;font-size:.82rem;color:#5a6a82;cursor:pointer}
+.logout-btn:hover{background:#f7f9fc}
+.main{max-width:900px;margin:0 auto;padding:1.5rem 1rem}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem}
+.stat-card{background:#fff;border-radius:12px;border:1px solid #e2e8f4;padding:1.25rem}
+.stat-label{font-size:.75rem;color:#7a8a9e;margin-bottom:6px}
+.stat-value{font-size:1.6rem;font-weight:700;color:#0f1c35}
+.stat-sub{font-size:.75rem;color:#7a8a9e;margin-top:4px}
+.stat-card.green .stat-value{color:#1d9e75}
+.stat-card.blue .stat-value{color:#1a5cd4}
+.stat-card.orange .stat-value{color:#d97706}
+.section{background:#fff;border-radius:12px;border:1px solid #e2e8f4;margin-bottom:1.5rem;overflow:hidden}
+.section-header{padding:1rem 1.25rem;border-bottom:1px solid #f0f4fa;display:flex;align-items:center;justify-content:space-between}
+.section-title{font-size:.9rem;font-weight:700;color:#0f1c35}
+.add-btn{background:#1a5cd4;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:.8rem;font-weight:600;cursor:pointer}
+.add-btn:hover{background:#1449b0}
+.table{width:100%;border-collapse:collapse}
+.table th{font-size:.75rem;color:#7a8a9e;font-weight:600;padding:.75rem 1.25rem;text-align:left;border-bottom:1px solid #f0f4fa;background:#fafbfd}
+.table td{font-size:.85rem;color:#0f1c35;padding:.85rem 1.25rem;border-bottom:1px solid #f8f9fc}
+.table tr:last-child td{border-bottom:none}
+.table tr:hover td{background:#fafbfd}
+.badge{display:inline-block;font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:20px}
+.badge.ok{background:#dcfce7;color:#166534}
+.tenko-btn{background:#f0f4fa;border:1px solid #d8e2f0;border-radius:6px;padding:5px 12px;font-size:.78rem;color:#1a5cd4;cursor:pointer;font-weight:600}
+.tenko-btn:hover{background:#e8f0fe}
+.empty{padding:2.5rem;text-align:center;color:#7a8a9e;font-size:.85rem}
+.loading{padding:2rem;text-align:center;color:#7a8a9e;font-size:.85rem}
+.action-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;padding:1rem}
+.action-card{border:1px solid #e2e8f4;border-radius:10px;padding:1rem;cursor:pointer;transition:all .15s}
+.action-card:hover{border-color:#1a5cd4;background:#f0f4fa}
+.action-icon{font-size:1.4rem;margin-bottom:.5rem}
+.action-title{font-size:.85rem;font-weight:700;color:#0f1c35;margin-bottom:2px}
+.action-desc{font-size:.75rem;color:#7a8a9e}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center}
+.overlay.show{display:flex}
+.modal{background:#fff;border-radius:14px;padding:1.5rem;width:90%;max-width:360px}
+.modal h2{font-size:1rem;font-weight:700;margin-bottom:1.25rem}
+.modal label{font-size:.82rem;color:#5a6a82;display:block;margin-bottom:4px}
+.modal input{width:100%;border:1px solid #d8e2f0;border-radius:8px;padding:10px 12px;font-size:.88rem;margin-bottom:1rem;outline:none}
+.modal-btns{display:flex;gap:.75rem}
+.modal-btns button{flex:1;padding:10px;border-radius:8px;font-size:.88rem;font-weight:600;cursor:pointer}
+.modal-cancel{background:#f0f4fa;border:1px solid #d8e2f0;color:#5a6a82}
+.modal-submit{background:#1a5cd4;border:none;color:#fff}
+.modal-msg{font-size:.8rem;color:#e24b4a;margin-top:.5rem;text-align:center}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <span class="logo">点呼管理システム</span>
+    <span class="company-badge" id="company-name">読込中...</span>
+  </div>
+  <div class="header-right">
+    <button class="logout-btn" onclick="logout()">ログアウト</button>
+  </div>
+</div>
+<div class="main">
+  <div class="stat-grid">
+    <div class="stat-card green">
+      <div class="stat-label">今日の点呼完了</div>
+      <div class="stat-value" id="stat-done">-</div>
+      <div class="stat-sub">乗務前＋乗務後</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-label">登録ドライバー数</div>
+      <div class="stat-value" id="stat-drivers">-</div>
+      <div class="stat-sub">アクティブ</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-label">未完了</div>
+      <div class="stat-value" id="stat-pending">-</div>
+      <div class="stat-sub">本日分</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">ドライバー一覧</span>
+      <button class="add-btn" onclick="openDriverModal()">＋ 追加</button>
+    </div>
+    <div id="driver-list"><div class="loading">読込中...</div></div>
+  </div>
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">クイックアクション</span>
+    </div>
+    <div class="action-grid">
+      <div class="action-card" onclick="window.location.href='tenko.html'">
+        <div class="action-icon">📋</div>
+        <div class="action-title">点呼を記録する</div>
+        <div class="action-desc">乗務前・乗務後の点呼入力</div>
+      </div>
+      <div class="action-card" onclick="window.location.href='records.html'">
+        <div class="action-icon">📊</div>
+        <div class="action-title">点呼記録を見る</div>
+        <div class="action-desc">過去の記録・CSV出力</div>
+      </div>
+      <div class="action-card" onclick="openDriverModal()">
+        <div class="action-icon">👤</div>
+        <div class="action-title">ドライバーを追加</div>
+        <div class="action-desc">新規ドライバーの登録</div>
+      </div>
+      <div class="action-card" onclick="alert('設定画面は次のステップで作成します')">
+        <div class="action-icon">⚙️</div>
+        <div class="action-title">設定</div>
+        <div class="action-desc">会社情報・プラン管理</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="overlay" id="driver-modal">
+  <div class="modal">
+    <h2>ドライバーを追加</h2>
+    <label>氏名</label>
+    <input type="text" id="d-name" placeholder="例：田村 太郎">
+    <label>車両番号</label>
+    <input type="text" id="d-vehicle" placeholder="例：横浜 100 あ 1234">
+    <label>電話番号</label>
+    <input type="tel" id="d-phone" placeholder="例：090-1234-5678">
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeDriverModal()">キャンセル</button>
+      <button class="modal-submit" onclick="addDriver()">追加する</button>
+    </div>
+    <div class="modal-msg" id="d-msg"></div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4"></script>
+<script>
+var SURL='https://hyvjvcdahahrznhujtaz.supabase.co';
+var SKEY='sb_publishable_JL-WVrBlhsj--cIG3r7imQ_24EOdkL5';
+var sb=window.supabase.createClient(SURL,SKEY);
+var companyId=null;
+var userId=null;
+
+async function logError(page,message,detail){
+  try{
+    await sb.from('error_logs').insert({
+      company_id:companyId,user_id:userId||null,
+      page:page,error_message:message,error_detail:detail||''
+    });
+  }catch(e){}
+}
+
+async function init(){
+  var {data:{session}}=await sb.auth.getSession();
+  if(!session){window.location.href='index.html';return;}
+  userId=session.user.id;
+  var {data:profile,error:pe}=await sb.from('user_profiles').select('company_id').eq('id',userId).single();
+  if(pe||!profile){logError('dashboard.html','プロフィール取得失敗',pe?.message);window.location.href='index.html';return;}
+  companyId=profile.company_id;
+  var {data:company,error:ce}=await sb.from('companies').select('name').eq('id',companyId).single();
+  if(ce) logError('dashboard.html','会社名取得失敗',ce.message);
+  if(company) document.getElementById('company-name').textContent=company.name;
+  loadDrivers();
+  loadStats();
+}
+
+async function loadDrivers(){
+  var {data:drivers,error}=await sb.from('drivers').select('*').eq('company_id',companyId).order('created_at',{ascending:false});
+  if(error){logError('dashboard.html','ドライバー取得失敗',error.message);}
+  var el=document.getElementById('driver-list');
+  if(!drivers||drivers.length===0){
+    el.innerHTML='<div class="empty">ドライバーがまだ登録されていません<br>「＋ 追加」から登録してください</div>';
+    document.getElementById('stat-drivers').textContent='0';
+    return;
+  }
+  document.getElementById('stat-drivers').textContent=drivers.length;
+  var rows=drivers.map(d=>`
+    <tr>
+      <td>${d.name||'-'}</td>
+      <td>${d.vehicle_number||'-'}</td>
+      <td>${d.phone||'-'}</td>
+      <td><span class="badge ok">アクティブ</span></td>
+      <td><button class="tenko-btn" onclick="window.location.href='tenko.html?driver=${d.id}'">点呼入力</button></td>
+    </tr>
+  `).join('');
+  el.innerHTML=`<table class="table">
+    <thead><tr><th>氏名</th><th>車両番号</th><th>電話番号</th><th>状態</th><th>操作</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+async function loadStats(){
+  var today=new Date().toISOString().split('T')[0];
+  var {data:records,error:re}=await sb.from('tenko_records').select('id').eq('company_id',companyId).eq('date',today);
+  if(re) logError('dashboard.html','統計取得失敗',re.message);
+  var done=records?records.length:0;
+  document.getElementById('stat-done').textContent=done;
+  var {data:drivers}=await sb.from('drivers').select('id').eq('company_id',companyId);
+  var driverCount=drivers?drivers.length:0;
+  document.getElementById('stat-pending').textContent=Math.max(0,driverCount*2-done);
+}
+
+function openDriverModal(){document.getElementById('driver-modal').classList.add('show');}
+function closeDriverModal(){document.getElementById('driver-modal').classList.remove('show');document.getElementById('d-msg').textContent='';}
+
+async function addDriver(){
+  var name=document.getElementById('d-name').value.trim();
+  var vehicle=document.getElementById('d-vehicle').value.trim();
+  var phone=document.getElementById('d-phone').value.trim();
+  var msg=document.getElementById('d-msg');
+  if(!name){msg.textContent='氏名を入力してください';return;}
+  var {error}=await sb.from('drivers').insert({company_id:companyId,name:name,vehicle_number:vehicle,phone:phone});
+  if(error){msg.textContent='登録エラー: '+error.message;logError('dashboard.html','ドライバー登録失敗',error.message);return;}
+  closeDriverModal();
+  document.getElementById('d-name').value='';
+  document.getElementById('d-vehicle').value='';
+  document.getElementById('d-phone').value='';
+  loadDrivers();
+  loadStats();
+}
+
+async function logout(){
+  await sb.auth.signOut();
+  window.location.href='index.html';
+}
+init();
+</script>
+</body>
+</html>

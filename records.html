@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>点呼記録一覧</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;color:#0f1c35}
+.header{background:#fff;border-bottom:1px solid #e2e8f4;padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-size:.95rem;font-weight:700;color:#0f1c35}
+.back-btn{background:none;border:1px solid #d8e2f0;border-radius:8px;padding:6px 14px;font-size:.82rem;color:#5a6a82;cursor:pointer}
+.back-btn:hover{background:#f7f9fc}
+.main{max-width:900px;margin:0 auto;padding:1.5rem 1rem}
+.page-title{font-size:1.1rem;font-weight:700;margin-bottom:1.25rem}
+.filter-bar{background:#fff;border-radius:12px;border:1px solid #e2e8f4;padding:1rem 1.25rem;margin-bottom:1rem;display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end}
+.filter-item{display:flex;flex-direction:column;gap:4px}
+.filter-item label{font-size:.78rem;color:#7a8a9e;font-weight:600}
+.filter-item select,.filter-item input{border:1px solid #d8e2f0;border-radius:8px;padding:7px 10px;font-size:.85rem;color:#0f1c35;outline:none;background:#fff}
+.filter-btn{background:#1a5cd4;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:.85rem;font-weight:600;cursor:pointer;align-self:flex-end}
+.csv-btn{background:#1d9e75;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:.85rem;font-weight:600;cursor:pointer;align-self:flex-end}
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1rem}
+.summary-card{background:#fff;border-radius:12px;border:1px solid #e2e8f4;padding:1rem 1.25rem}
+.summary-label{font-size:.75rem;color:#7a8a9e;margin-bottom:4px}
+.summary-value{font-size:1.4rem;font-weight:700;color:#0f1c35}
+.summary-card.green .summary-value{color:#1d9e75}
+.summary-card.blue .summary-value{color:#1a5cd4}
+.summary-card.red .summary-value{color:#e24b4a}
+.section{background:#fff;border-radius:12px;border:1px solid #e2e8f4;overflow:hidden}
+.section-header{padding:1rem 1.25rem;border-bottom:1px solid #f0f4fa;display:flex;align-items:center;justify-content:space-between}
+.section-title{font-size:.9rem;font-weight:700}
+.record-count{font-size:.8rem;color:#7a8a9e}
+.table-wrap{overflow-x:auto}
+.table{width:100%;border-collapse:collapse;min-width:700px}
+.table th{font-size:.75rem;color:#7a8a9e;font-weight:600;padding:.75rem 1rem;text-align:left;border-bottom:1px solid #f0f4fa;background:#fafbfd;white-space:nowrap}
+.table td{font-size:.82rem;color:#0f1c35;padding:.8rem 1rem;border-bottom:1px solid #f8f9fc;white-space:nowrap}
+.table tr:last-child td{border-bottom:none}
+.table tr:hover td{background:#fafbfd}
+.badge{display:inline-block;font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:20px}
+.badge.before{background:#e8f0fe;color:#1a5cd4}
+.badge.after{background:#f3e8ff;color:#7c3aed}
+.badge.ok{background:#dcfce7;color:#166534}
+.badge.ng{background:#fee2e2;color:#991b1b}
+.empty{padding:3rem;text-align:center;color:#7a8a9e;font-size:.85rem}
+.loading{padding:2rem;text-align:center;color:#7a8a9e;font-size:.85rem}
+.pagination{display:flex;justify-content:center;align-items:center;gap:.5rem;padding:1rem}
+.page-btn{border:1px solid #d8e2f0;background:#fff;border-radius:6px;padding:5px 12px;font-size:.82rem;cursor:pointer;color:#0f1c35}
+.page-btn:hover{background:#f0f4fa}
+.page-btn.active{background:#1a5cd4;border-color:#1a5cd4;color:#fff}
+</style>
+</head>
+<body>
+<div class="header">
+  <span class="logo">点呼記録一覧</span>
+  <button class="back-btn" onclick="window.location.href='dashboard.html'">← ダッシュボード</button>
+</div>
+<div class="main">
+  <div class="page-title">点呼記録</div>
+  <div class="filter-bar">
+    <div class="filter-item">
+      <label>開始日</label>
+      <input type="date" id="f-from">
+    </div>
+    <div class="filter-item">
+      <label>終了日</label>
+      <input type="date" id="f-to">
+    </div>
+    <div class="filter-item">
+      <label>ドライバー</label>
+      <select id="f-driver"><option value="">全員</option></select>
+    </div>
+    <div class="filter-item">
+      <label>区分</label>
+      <select id="f-type">
+        <option value="">全て</option>
+        <option value="乗務前">乗務前</option>
+        <option value="乗務後">乗務後</option>
+      </select>
+    </div>
+    <button class="filter-btn" onclick="loadRecords()">絞り込む</button>
+    <button class="csv-btn" onclick="exportCSV()">CSV出力</button>
+  </div>
+  <div class="summary-grid">
+    <div class="summary-card blue">
+      <div class="summary-label">総記録数</div>
+      <div class="summary-value" id="sum-total">-</div>
+    </div>
+    <div class="summary-card green">
+      <div class="summary-label">正常（アルコール0）</div>
+      <div class="summary-value" id="sum-ok">-</div>
+    </div>
+    <div class="summary-card red">
+      <div class="summary-label">要確認（0.15以上）</div>
+      <div class="summary-value" id="sum-ng">-</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">記録一覧</span>
+      <span class="record-count" id="record-count"></span>
+    </div>
+    <div class="table-wrap">
+      <div id="record-list"><div class="loading">読込中...</div></div>
+    </div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4"></script>
+<script>
+var SURL='https://hyvjvcdahahrznhujtaz.supabase.co';
+var SKEY='sb_publishable_JL-WVrBlhsj--cIG3r7imQ_24EOdkL5';
+var sb=window.supabase.createClient(SURL,SKEY);
+var companyId=null;
+var userId=null;
+var allRecords=[];
+var PAGE_SIZE=20;
+var currentPage=1;
+
+async function logError(page,message,detail){
+  try{
+    await sb.from('error_logs').insert({
+      company_id:companyId,user_id:userId||null,
+      page:page,error_message:message,error_detail:detail||''
+    });
+  }catch(e){}
+}
+
+async function init(){
+  var {data:{session}}=await sb.auth.getSession();
+  if(!session){window.location.href='index.html';return;}
+  userId=session.user.id;
+  var {data:profile,error:pe}=await sb.from('user_profiles').select('company_id').eq('id',userId).single();
+  if(pe||!profile){logError('records.html','プロフィール取得失敗',pe?.message);window.location.href='index.html';return;}
+  companyId=profile.company_id;
+  var now=new Date();
+  var y=now.getFullYear();
+  var m=String(now.getMonth()+1).padStart(2,'0');
+  document.getElementById('f-from').value=y+'-'+m+'-01';
+  document.getElementById('f-to').value=y+'-'+m+'-'+String(new Date(y,now.getMonth()+1,0).getDate()).padStart(2,'0');
+  await loadDriverFilter();
+  await loadRecords();
+}
+
+async function loadDriverFilter(){
+  var {data:drivers,error}=await sb.from('drivers').select('id,name').eq('company_id',companyId).order('name');
+  if(error){logError('records.html','ドライバー取得失敗',error.message);}
+  var sel=document.getElementById('f-driver');
+  (drivers||[]).forEach(d=>{
+    var opt=document.createElement('option');
+    opt.value=d.id;opt.textContent=d.name;sel.appendChild(opt);
+  });
+}
+
+async function loadRecords(){
+  var from=document.getElementById('f-from').value;
+  var to=document.getElementById('f-to').value;
+  var driverId=document.getElementById('f-driver').value;
+  var type=document.getElementById('f-type').value;
+  var q=sb.from('tenko_records').select('*,drivers(name,vehicle_number)')
+    .eq('company_id',companyId).order('date',{ascending:false}).order('created_at',{ascending:false});
+  if(from) q=q.gte('date',from);
+  if(to) q=q.lte('date',to);
+  if(driverId) q=q.eq('driver_id',driverId);
+  if(type) q=q.eq('tenko_type',type);
+  var {data,error}=await q;
+  if(error){logError('records.html','記録取得失敗',error.message);}
+  allRecords=data||[];
+  currentPage=1;
+  updateSummary();
+  renderTable();
+}
+
+function updateSummary(){
+  var total=allRecords.length;
+  var ng=allRecords.filter(r=>parseFloat(r.alcohol_value)>=0.15).length;
+  document.getElementById('sum-total').textContent=total;
+  document.getElementById('sum-ok').textContent=total-ng;
+  document.getElementById('sum-ng').textContent=ng;
+}
+
+function renderTable(){
+  var start=(currentPage-1)*PAGE_SIZE;
+  var page=allRecords.slice(start,start+PAGE_SIZE);
+  document.getElementById('record-count').textContent=allRecords.length+'件';
+  if(allRecords.length===0){
+    document.getElementById('record-list').innerHTML='<div class="empty">記録がありません</div>';
+    document.getElementById('pagination').innerHTML='';return;
+  }
+  var rows=page.map(r=>{
+    var alc=parseFloat(r.alcohol_value)||0;
+    var alcBadge=alc>=0.15
+      ?'<span class="badge ng">要確認 '+alc.toFixed(2)+'</span>'
+      :'<span class="badge ok">正常 '+alc.toFixed(2)+'</span>';
+    var typeBadge=r.tenko_type==='乗務前'
+      ?'<span class="badge before">乗務前</span>'
+      :'<span class="badge after">乗務後</span>';
+    return `<tr>
+      <td>${r.date||'-'}</td>
+      <td>${r.drivers?r.drivers.name:'-'}</td>
+      <td>${r.drivers?r.drivers.vehicle_number||'-':'-'}</td>
+      <td>${typeBadge}</td>
+      <td>${r.method||'-'}</td>
+      <td>${alcBadge}</td>
+      <td>${r.health_status||'-'}</td>
+      <td>${r.fatigue_status||'-'}</td>
+      <td>${r.meter_value||'-'}</td>
+      <td>${r.notes||''}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('record-list').innerHTML=`
+    <table class="table"><thead><tr>
+      <th>日付</th><th>ドライバー</th><th>車両番号</th><th>区分</th>
+      <th>点呼方法</th><th>アルコール</th><th>健康状態</th><th>疲労</th>
+      <th>メーター</th><th>備考</th>
+    </tr></thead><tbody>${rows}</tbody></table>`;
+  var totalPages=Math.ceil(allRecords.length/PAGE_SIZE);
+  if(totalPages<=1){document.getElementById('pagination').innerHTML='';return;}
+  var btns='';
+  for(var i=1;i<=totalPages;i++){
+    btns+=`<button class="page-btn${i===currentPage?' active':''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  document.getElementById('pagination').innerHTML=btns;
+}
+
+function goPage(p){currentPage=p;renderTable();window.scrollTo(0,0);}
+
+function exportCSV(){
+  if(allRecords.length===0){alert('データがありません');return;}
+  var headers=['日付','ドライバー','車両番号','区分','点呼方法','アルコール値','健康状態','疲労状態','メーター','備考'];
+  var rows=allRecords.map(r=>[
+    r.date||'',r.drivers?r.drivers.name:'',r.drivers?r.drivers.vehicle_number||'':'',
+    r.tenko_type||'',r.method||'',r.alcohol_value||0,
+    r.health_status||'',r.fatigue_status||'',r.meter_value||'',r.notes||''
+  ].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','));
+  var csv='\uFEFF'+headers.join(',')+'\n'+rows.join('\n');
+  var now=new Date();
+  var fname='点呼記録_'+now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')+'.csv';
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download=fname;a.click();
+  URL.revokeObjectURL(url);
+}
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>点呼SaaS</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Hiragino Sans',sans-serif;background:#f7f9fc;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1rem}
+.card{background:#fff;border-radius:14px;border:1px solid #e8edf4;padding:2rem 1.5rem;width:100%;max-width:360px}
+h1{font-size:1.2rem;font-weight:700;color:#0f1c35;margin-bottom:.25rem}
+.sub{font-size:.85rem;color:#7a8a9e;margin-bottom:1.75rem}
+label{font-size:.82rem;color:#5a6a82;display:block;margin-bottom:4px}
+input{width:100%;border:1px solid #d8e2f0;border-radius:8px;padding:10px 12px;font-size:.9rem;color:#0f1c35;margin-bottom:1rem;outline:none}
+.btn{width:100%;background:#1a5cd4;color:#fff;border:none;border-radius:8px;padding:12px;font-size:.95rem;font-weight:600;cursor:pointer}
+.btn:disabled{opacity:.6}
+.msg{font-size:.82rem;margin-top:1rem;text-align:center}
+.err{color:#e24b4a}
+.ok{color:#1d9e75}
+.toggle{font-size:.82rem;color:#1a5cd4;text-align:center;margin-top:1rem;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>点呼管理システム</h1>
+  <p class="sub" id="lbl">アカウントにログイン</p>
+  <div id="sf" style="display:none">
+    <label>会社名</label>
+    <input type="text" id="cn" placeholder="例：JLS合同会社">
+  </div>
+  <label>メールアドレス</label>
+  <input type="email" id="em" placeholder="example@email.com">
+  <label>パスワード</label>
+  <input type="password" id="pw" placeholder="8文字以上">
+  <button class="btn" id="btn">ログイン</button>
+  <div class="msg" id="msg"></div>
+  <div class="toggle" id="tgl">アカウントを新規作成</div>
+  <div class="toggle" id="reset-lnk" onclick="window.location.href='reset.html'" style="color:#7a8a9e;margin-top:.5rem">パスワードをお忘れの方</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4"></script>
+<script>
+var SURL='https://hyvjvcdahahrznhujtaz.supabase.co';
+var SKEY='sb_publishable_JL-WVrBlhsj--cIG3r7imQ_24EOdkL5';
+var sb=window.supabase.createClient(SURL,SKEY);
+var isUp=false;
+
+document.getElementById('tgl').addEventListener('click',function(){
+  isUp=!isUp;
+  document.getElementById('lbl').textContent=isUp?'新規アカウント作成':'アカウントにログイン';
+  document.getElementById('btn').textContent=isUp?'登録する':'ログイン';
+  document.getElementById('tgl').textContent=isUp?'ログインに戻る':'アカウントを新規作成';
+  document.getElementById('sf').style.display=isUp?'block':'none';
+  document.getElementById('msg').textContent='';
+});
+
+document.getElementById('btn').addEventListener('click',async function(){
+  var em=document.getElementById('em').value.trim();
+  var pw=document.getElementById('pw').value;
+  var msg=document.getElementById('msg');
+  var btn=document.getElementById('btn');
+  if(!em||!pw){msg.className='msg err';msg.textContent='入力してください';return;}
+  btn.disabled=true;
+  if(isUp){
+    var cn=document.getElementById('cn').value.trim();
+    if(!cn){msg.className='msg err';msg.textContent='会社名を入力してください';btn.disabled=false;return;}
+    var r=await sb.auth.signUp({email:em,password:pw});
+    if(r.error){msg.className='msg err';msg.textContent=r.error.message;btn.disabled=false;return;}
+    var c=await sb.from('companies').insert({name:cn}).select().single();
+    await sb.from('user_profiles').insert({id:r.data.user.id,company_id:c.data.id,role:'admin'});
+    msg.className='msg ok';msg.textContent='登録完了！確認メールを送信しました。';
+  } else {
+    var r2=await sb.auth.signInWithPassword({email:em,password:pw});
+    if(r2.error){msg.className='msg err';msg.textContent='メールまたはパスワードが違います';btn.disabled=false;return;}
+    window.location.href='dashboard.html';
+  }
+  btn.disabled=false;
+});
+</script>
+</body>
+</html>

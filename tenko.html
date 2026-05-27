@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>点呼入力</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;color:#0f1c35}
+.header{background:#fff;border-bottom:1px solid #e2e8f4;padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-size:.95rem;font-weight:700;color:#0f1c35}
+.back-btn{background:none;border:1px solid #d8e2f0;border-radius:8px;padding:6px 14px;font-size:.82rem;color:#5a6a82;cursor:pointer}
+.back-btn:hover{background:#f7f9fc}
+.main{max-width:600px;margin:0 auto;padding:1.5rem 1rem}
+.page-title{font-size:1.1rem;font-weight:700;margin-bottom:1.25rem;color:#0f1c35}
+.card{background:#fff;border-radius:12px;border:1px solid #e2e8f4;padding:1.25rem;margin-bottom:1rem}
+.card-title{font-size:.82rem;font-weight:700;color:#7a8a9e;margin-bottom:1rem;text-transform:uppercase;letter-spacing:.5px}
+label{font-size:.85rem;color:#5a6a82;display:block;margin-bottom:5px}
+input[type=text],input[type=number],textarea,select{width:100%;border:1px solid #d8e2f0;border-radius:8px;padding:10px 12px;font-size:.9rem;color:#0f1c35;outline:none;background:#fff;margin-bottom:1rem}
+input[type=text]:focus,input[type=number]:focus,textarea:focus,select:focus{border-color:#1a5cd4}
+textarea{resize:vertical;min-height:80px}
+.type-btns{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
+.type-btn{padding:14px;border-radius:10px;border:2px solid #e2e8f4;background:#fafbfd;cursor:pointer;text-align:center;transition:all .15s}
+.type-btn.active{border-color:#1a5cd4;background:#e8f0fe}
+.type-btn-icon{font-size:1.4rem;margin-bottom:4px}
+.type-btn-label{font-size:.85rem;font-weight:700;color:#0f1c35}
+.type-btn-sub{font-size:.72rem;color:#7a8a9e}
+.alcohol-row{display:flex;gap:.75rem;align-items:flex-end;margin-bottom:1rem}
+.alcohol-row>div:first-child{flex:1}
+.alcohol-row>div:last-child{margin-bottom:1rem}
+.alcohol-row input{margin-bottom:0}
+.alc-badge{display:inline-block;padding:8px 16px;border-radius:8px;font-size:.85rem;font-weight:700}
+.alc-badge.ok{background:#dcfce7;color:#166534}
+.alc-badge.ng{background:#fee2e2;color:#991b1b}
+.radio-group{display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap}
+.radio-btn{padding:8px 16px;border-radius:8px;border:1px solid #d8e2f0;background:#fafbfd;cursor:pointer;font-size:.85rem;font-weight:600;color:#5a6a82;transition:all .15s}
+.radio-btn.active{border-color:#1a5cd4;background:#e8f0fe;color:#1a5cd4}
+.radio-btn.ng-active{border-color:#e24b4a;background:#fee2e2;color:#e24b4a}
+.submit-btn{width:100%;background:#1a5cd4;color:#fff;border:none;border-radius:10px;padding:14px;font-size:1rem;font-weight:700;cursor:pointer;margin-top:.5rem}
+.submit-btn:disabled{opacity:.6}
+.submit-btn:hover:not(:disabled){background:#1449b0}
+.msg{font-size:.85rem;text-align:center;margin-top:1rem;padding:.75rem;border-radius:8px}
+.msg.ok{background:#dcfce7;color:#166534}
+.msg.err{background:#fee2e2;color:#991b1b}
+.driver-info{display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;background:#f7f9fc;border-radius:8px;margin-bottom:1rem}
+.driver-avatar{width:36px;height:36px;background:#1a5cd4;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.9rem}
+.driver-name{font-weight:700;font-size:.9rem}
+.driver-vehicle{font-size:.78rem;color:#7a8a9e}
+</style>
+</head>
+<body>
+<div class="header">
+  <span class="logo">点呼入力</span>
+  <button class="back-btn" onclick="window.location.href='dashboard.html'">← ダッシュボード</button>
+</div>
+<div class="main">
+  <div class="page-title">点呼記録</div>
+  <div class="card">
+    <div class="card-title">ドライバー</div>
+    <label>ドライバーを選択</label>
+    <select id="driver-select" onchange="onDriverChange()">
+      <option value="">-- 選択してください --</option>
+    </select>
+    <div class="driver-info" id="driver-info" style="display:none">
+      <div class="driver-avatar" id="driver-avatar">-</div>
+      <div>
+        <div class="driver-name" id="driver-name-disp">-</div>
+        <div class="driver-vehicle" id="driver-vehicle-disp">-</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">点呼区分</div>
+    <div class="type-btns">
+      <div class="type-btn active" id="btn-before" onclick="setType('before')">
+        <div class="type-btn-icon">🌅</div>
+        <div class="type-btn-label">乗務前点呼</div>
+        <div class="type-btn-sub">出発前に実施</div>
+      </div>
+      <div class="type-btn" id="btn-after" onclick="setType('after')">
+        <div class="type-btn-icon">🌙</div>
+        <div class="type-btn-label">乗務後点呼</div>
+        <div class="type-btn-sub">帰着後に実施</div>
+      </div>
+    </div>
+    <label>点呼方法</label>
+    <select id="tenko-method">
+      <option value="対面">対面</option>
+      <option value="電話">電話</option>
+      <option value="IT点呼">IT点呼</option>
+    </select>
+  </div>
+  <div class="card">
+    <div class="card-title">アルコール検知</div>
+    <div class="alcohol-row">
+      <div>
+        <label>検知値（mg/L）</label>
+        <input type="number" id="alcohol-val" placeholder="0.00" step="0.01" min="0" oninput="checkAlcohol()">
+      </div>
+      <div><span class="alc-badge ok" id="alc-badge">正常</span></div>
+    </div>
+    <label>使用機器</label>
+    <input type="text" id="alcohol-device" placeholder="例：アルコール検知器 SC-103">
+  </div>
+  <div class="card">
+    <div class="card-title">走行メーター</div>
+    <label>メーター値（km）</label>
+    <input type="number" id="meter-val" placeholder="例：12345">
+  </div>
+  <div class="card">
+    <div class="card-title">健康状態・疲労</div>
+    <label>健康状態</label>
+    <div class="radio-group">
+      <div class="radio-btn active" id="h-good" onclick="setHealth('良好')">良好</div>
+      <div class="radio-btn" id="h-normal" onclick="setHealth('普通')">普通</div>
+      <div class="radio-btn" id="h-bad" onclick="setHealth('不良')">不良</div>
+    </div>
+    <label>疲労・睡眠</label>
+    <div class="radio-group">
+      <div class="radio-btn active" id="f-good" onclick="setFatigue('問題なし')">問題なし</div>
+      <div class="radio-btn" id="f-tired" onclick="setFatigue('やや疲労')">やや疲労</div>
+      <div class="radio-btn" id="f-bad" onclick="setFatigue('疲労あり')">疲労あり</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">特記事項</div>
+    <label>備考・指示事項</label>
+    <textarea id="notes" placeholder="特記事項があれば入力してください"></textarea>
+  </div>
+  <button class="submit-btn" id="submit-btn" onclick="submitTenko()">点呼を記録する</button>
+  <div class="msg" id="msg" style="display:none"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4"></script>
+<script>
+var SURL='https://hyvjvcdahahrznhujtaz.supabase.co';
+var SKEY='sb_publishable_JL-WVrBlhsj--cIG3r7imQ_24EOdkL5';
+var sb=window.supabase.createClient(SURL,SKEY);
+var companyId=null;
+var userId=null;
+var tenkoType='before';
+var healthStatus='良好';
+var fatigueStatus='問題なし';
+var drivers=[];
+
+async function logError(page,message,detail){
+  try{
+    await sb.from('error_logs').insert({
+      company_id:companyId,user_id:userId||null,
+      page:page,error_message:message,error_detail:detail||''
+    });
+  }catch(e){}
+}
+
+async function init(){
+  var {data:{session}}=await sb.auth.getSession();
+  if(!session){window.location.href='index.html';return;}
+  userId=session.user.id;
+  var {data:profile,error:pe}=await sb.from('user_profiles').select('company_id').eq('id',userId).single();
+  if(pe||!profile){logError('tenko.html','プロフィール取得失敗',pe?.message);window.location.href='index.html';return;}
+  companyId=profile.company_id;
+  await loadDrivers();
+  // URLパラメータからドライバー自動選択
+  var params=new URLSearchParams(window.location.search);
+  var driverId=params.get('driver');
+  if(driverId){
+    document.getElementById('driver-select').value=driverId;
+    onDriverChange();
+  }
+}
+
+async function loadDrivers(){
+  var {data,error}=await sb.from('drivers').select('*').eq('company_id',companyId).order('name');
+  if(error){logError('tenko.html','ドライバー取得失敗',error.message);}
+  drivers=data||[];
+  var sel=document.getElementById('driver-select');
+  drivers.forEach(d=>{
+    var opt=document.createElement('option');
+    opt.value=d.id;
+    opt.textContent=d.name;
+    sel.appendChild(opt);
+  });
+}
+
+function onDriverChange(){
+  var id=document.getElementById('driver-select').value;
+  var info=document.getElementById('driver-info');
+  if(!id){info.style.display='none';return;}
+  var d=drivers.find(x=>x.id===id);
+  if(!d){info.style.display='none';return;}
+  document.getElementById('driver-avatar').textContent=d.name.charAt(0);
+  document.getElementById('driver-name-disp').textContent=d.name;
+  document.getElementById('driver-vehicle-disp').textContent=d.vehicle_number||'車両番号未登録';
+  info.style.display='flex';
+}
+
+function setType(t){
+  tenkoType=t;
+  document.getElementById('btn-before').classList.toggle('active',t==='before');
+  document.getElementById('btn-after').classList.toggle('active',t==='after');
+}
+
+function checkAlcohol(){
+  var v=parseFloat(document.getElementById('alcohol-val').value)||0;
+  var badge=document.getElementById('alc-badge');
+  if(v>=0.15){badge.className='alc-badge ng';badge.textContent='要確認';}
+  else{badge.className='alc-badge ok';badge.textContent='正常';}
+}
+
+function setHealth(v){
+  healthStatus=v;
+  ['h-good','h-normal','h-bad'].forEach(id=>document.getElementById(id).className='radio-btn');
+  var map={'良好':'h-good','普通':'h-normal','不良':'h-bad'};
+  document.getElementById(map[v]).className=v==='不良'?'radio-btn ng-active':'radio-btn active';
+}
+
+function setFatigue(v){
+  fatigueStatus=v;
+  ['f-good','f-tired','f-bad'].forEach(id=>document.getElementById(id).className='radio-btn');
+  var map={'問題なし':'f-good','やや疲労':'f-tired','疲労あり':'f-bad'};
+  document.getElementById(map[v]).className=v==='疲労あり'?'radio-btn ng-active':'radio-btn active';
+}
+
+async function submitTenko(){
+  var driverId=document.getElementById('driver-select').value;
+  var btn=document.getElementById('submit-btn');
+  if(!driverId){showMsg('ドライバーを選択してください','err');return;}
+  btn.disabled=true;
+  var record={
+    company_id:companyId,driver_id:driverId,recorded_by:userId,
+    tenko_type:tenkoType==='before'?'乗務前':'乗務後',
+    method:document.getElementById('tenko-method').value,
+    alcohol_value:parseFloat(document.getElementById('alcohol-val').value)||0,
+    alcohol_device:document.getElementById('alcohol-device').value,
+    meter_value:parseInt(document.getElementById('meter-val').value)||null,
+    health_status:healthStatus,fatigue_status:fatigueStatus,
+    notes:document.getElementById('notes').value,
+  };
+  var {error}=await sb.from('tenko_records').insert(record);
+  if(error){
+    showMsg('エラー: '+error.message,'err');
+    logError('tenko.html','点呼記録失敗',error.message);
+    btn.disabled=false;return;
+  }
+  showMsg('点呼を記録しました！','ok');
+  btn.disabled=false;
+  setTimeout(()=>window.location.href='dashboard.html',1500);
+}
+
+function showMsg(text,type){
+  var el=document.getElementById('msg');
+  el.textContent=text;el.className='msg '+type;el.style.display='block';
+}
+init();
+</script>
+</body>
+</html>
