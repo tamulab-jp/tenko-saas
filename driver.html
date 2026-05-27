@@ -5,104 +5,84 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>点呼入力</title>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Hiragino Sans', sans-serif; background: #f4f7fc; min-height: 100vh; color: #1e293b; -webkit-tap-highlight-color: transparent; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;color:#0f1c35}
+.header{background:#1a5cd4;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.header-title{font-size:1rem;font-weight:700;color:#fff}
+.header-name{font-size:.8rem;color:rgba(255,255,255,.8)}
+.logout-btn{background:rgba(255,255,255,.2);border:none;border-radius:6px;padding:5px 12px;font-size:.78rem;color:#fff;cursor:pointer}
 
-/* ヘッダー */
-.header { background: #1e40af; padding: 1.25rem 1rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-.header-title { font-size: 1.1rem; font-weight: 700; color: #fff; letter-spacing: 0.5px; }
-.header-name { font-size: .85rem; color: rgba(255,255,255,0.85); margin-top: 2px; }
-.logout-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); border-radius: 6px; padding: 6px 14px; font-size: .8rem; color: #fff; cursor: pointer; font-weight: 600; transition: background 0.2s; }
-.logout-btn:active { background: rgba(255,255,255,0.3); }
-
-.main { max-width: 480px; margin: 0 auto; padding: 1rem; }
+.main{max-width:480px;margin:0 auto;padding:1rem}
 
 /* 今日の状況 */
-.status-bar { background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
-.status-title { font-size: .8rem; font-weight: 700; color: #64748b; margin-bottom: .75rem; display: flex; align-items: center; gap: 4px; }
-.status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
-.status-item { text-align: center; padding: .85rem; border-radius: 12px; background: #f8fafc; border: 1px solid #f1f5f9; transition: all 0.2s; }
-.status-item.done { background: #f0fdf4; border-color: #bbf7d0; }
-.status-item.pending { background: #fff7ed; border-color: #ffedd5; }
-.status-label { font-size: .75rem; color: #64748b; margin-bottom: 4px; font-weight: 600; }
-.status-value { font-size: 1rem; font-weight: 700; color: #475569; }
-.status-item.done .status-value { color: #166534; }
-.status-item.pending .status-value { color: #c2410c; }
+.status-bar{background:#fff;border-radius:12px;border:1px solid #e2e8f4;padding:1rem 1.25rem;margin-bottom:1rem}
+.status-title{font-size:.78rem;font-weight:700;color:#7a8a9e;margin-bottom:.75rem}
+.status-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.status-item{text-align:center;padding:.75rem;border-radius:8px;background:#f7f9fc}
+.status-item.done{background:#dcfce7}
+.status-item.pending{background:#fef3c7}
+.status-label{font-size:.72rem;color:#7a8a9e;margin-bottom:4px}
+.status-value{font-size:.85rem;font-weight:700}
+.status-item.done .status-value{color:#166534}
+.status-item.pending .status-value{color:#92400e}
 
 /* 入力カード */
-.card { background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 1.5rem; margin-bottom: 1.25rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-.card-title { font-size: .9rem; font-weight: 700; color: #334155; margin-bottom: 1.25rem; border-left: 4px solid #1e40af; padding-left: 8px; }
+.card{background:#fff;border-radius:12px;border:1px solid #e2e8f4;padding:1.25rem;margin-bottom:1rem}
+.card-title{font-size:.82rem;font-weight:700;color:#7a8a9e;margin-bottom:1rem;text-transform:uppercase;letter-spacing:.5px}
 
 /* 区分ボタン */
-.type-btns { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-bottom: 1.5rem; }
-.type-btn { padding: 16px; border-radius: 12px; border: 2px solid #e2e8f0; background: #fff; cursor: pointer; text-align: center; transition: all .2s ease; }
-.type-btn.active { border-color: #1e40af; background: #eff6ff; }
-.type-btn.done-btn { border-color: #10b981; background: #ecfdf5; opacity: .7; cursor: default; }
-.type-btn-icon { font-size: 1.6rem; margin-bottom: 6px; }
-.type-btn-label { font-size: .95rem; font-weight: 700; color: #1e293b; }
-.type-btn-sub { font-size: .72rem; color: #64748b; margin-top: 2px; }
+.type-btns{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
+.type-btn{padding:14px;border-radius:10px;border:2px solid #e2e8f4;background:#fafbfd;cursor:pointer;text-align:center;transition:all .15s}
+.type-btn.active{border-color:#1a5cd4;background:#e8f0fe}
+.type-btn.done-btn{border-color:#1d9e75;background:#dcfce7;opacity:.7;cursor:default}
+.type-btn-icon{font-size:1.4rem;margin-bottom:4px}
+.type-btn-label{font-size:.85rem;font-weight:700;color:#0f1c35}
+.type-btn-sub{font-size:.72rem;color:#7a8a9e}
 
-.form-group { margin-bottom: 1.25rem; }
-label { font-size: .85rem; font-weight: 700; color: #475569; display: block; margin-bottom: 8px; }
+label{font-size:.85rem;color:#5a6a82;display:block;margin-bottom:5px}
+input[type=number],input[type=text],textarea,select{width:100%;border:1px solid #d8e2f0;border-radius:8px;padding:10px 12px;font-size:.9rem;color:#0f1c35;outline:none;background:#fff;margin-bottom:1rem}
+textarea{resize:vertical;min-height:70px}
 
-input[type=number], input[type=text], textarea, select { width: 100%; border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px 14px; font-size: 1rem; color: #1e293b; outline: none; background: #fff; transition: all 0.2s; -webkit-appearance: none; }
-input:focus, textarea:focus { border-color: #1e40af; box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1); }
-textarea { resize: vertical; min-height: 80px; }
+.alcohol-row{display:flex;gap:.75rem;align-items:flex-end;margin-bottom:1rem}
+.alcohol-row>div:first-child{flex:1}
+.alcohol-row>div:last-child{margin-bottom:1rem}
+.alcohol-row input{margin-bottom:0}
+.alc-badge{display:inline-block;padding:8px 14px;border-radius:8px;font-size:.82rem;font-weight:700}
+.alc-badge.ok{background:#dcfce7;color:#166534}
+.alc-badge.ng{background:#fee2e2;color:#991b1b}
 
-/* アルコール入力エリアを独立させて視認性強化 */
-.alcohol-section { background: #f8fafc; padding: 1rem; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 1.25rem; transition: all 0.2s; }
-.alcohol-section.danger-alert { background: #fef2f2; border-color: #fca5a5; }
+.radio-group{display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap}
+.radio-btn{padding:8px 14px;border-radius:8px;border:1px solid #d8e2f0;background:#fafbfd;cursor:pointer;font-size:.82rem;font-weight:600;color:#5a6a82}
+.radio-btn.active{border-color:#1a5cd4;background:#e8f0fe;color:#1a5cd4}
+.radio-btn.ng-active{border-color:#e24b4a;background:#fee2e2;color:#e24b4a}
 
-.alcohol-row { display: flex; gap: .75rem; align-items: flex-end; }
-.alcohol-row > div:first-child { flex: 1; }
-.alc-badge { display: inline-flex; align-items: center; justify-content: center; height: 46px; min-width: 80px; padding: 0 12px; border-radius: 10px; font-size: .9rem; font-weight: 700; }
-.alc-badge.ok { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-.alc-badge.ng { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; animation: pulse 2s infinite; }
+.submit-btn{width:100%;background:#1a5cd4;color:#fff;border:none;border-radius:10px;padding:14px;font-size:1rem;font-weight:700;cursor:pointer;margin-top:.5rem}
+.submit-btn:disabled{opacity:.6}
 
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.03); box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.2); }
-  100% { transform: scale(1); }
-}
+.msg{font-size:.85rem;text-align:center;margin-top:1rem;padding:.75rem;border-radius:8px}
+.msg.ok{background:#dcfce7;color:#166534}
+.msg.err{background:#fee2e2;color:#991b1b}
 
-/* 直感的な押しやすいラジオボタン（3分割均等） */
-.radio-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .5rem; }
-.radio-btn { padding: 12px 8px; text-align: center; border-radius: 10px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-size: .85rem; font-weight: 700; color: #64748b; transition: all .15s; }
-.radio-btn.active { border-color: #1e40af; background: #eff6ff; color: #1e40af; border-width: 2px; padding: 11px 7px; }
-.radio-btn.ng-active { border-color: #ef4444; background: #fef2f2; color: #b91c1c; border-width: 2px; padding: 11px 7px; }
+/* 履歴 */
+.history-section{background:#fff;border-radius:12px;border:1px solid #e2e8f4;overflow:hidden;margin-bottom:1rem}
+.history-header{padding:.75rem 1.25rem;border-bottom:1px solid #f0f4fa;font-size:.85rem;font-weight:700}
+.history-item{padding:.75rem 1.25rem;border-bottom:1px solid #f8f9fc;display:flex;align-items:center;justify-content:space-between}
+.history-item:last-child{border-bottom:none}
+.history-left .history-type{font-size:.82rem;font-weight:700;color:#0f1c35}
+.history-left .history-time{font-size:.72rem;color:#7a8a9e;margin-top:2px}
+.history-right{display:flex;align-items:center;gap:.5rem}
+.badge{display:inline-block;font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:20px}
+.badge.before{background:#e8f0fe;color:#1a5cd4}
+.badge.after{background:#f3e8ff;color:#7c3aed}
+.badge.ok{background:#dcfce7;color:#166534}
+.badge.modified{background:#fef3c7;color:#92400e}
+.edit-btn{background:#f0f4fa;border:1px solid #d8e2f0;border-radius:6px;padding:4px 10px;font-size:.75rem;color:#1a5cd4;cursor:pointer;font-weight:600}
 
-/* 送信ボタン */
-.submit-btn { width: 100%; background: #1e40af; color: #fff; border: none; border-radius: 12px; padding: 16px; font-size: 1.05rem; font-weight: 700; cursor: pointer; margin-top: .75rem; box-shadow: 0 4px 6px -1px rgba(30, 64, 175, 0.2); transition: all 0.2s; }
-.submit-btn:active { transform: translateY(1px); box-shadow: none; background: #1d4ed8; }
-.submit-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-
-.msg { font-size: .9rem; font-weight: 700; text-align: center; margin-top: 1rem; padding: 1rem; border-radius: 10px; }
-.msg.ok { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-.msg.err { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
-
-/* 履歴セクション */
-.history-section { background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; margin-bottom: 2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-.history-header { padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9; font-size: .9rem; font-weight: 700; color: #334155; background: #f8fafc; }
-.history-item { padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-.history-item:last-child { border-bottom: none; }
-.history-left { flex: 1; }
-.history-type { font-size: .85rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
-.history-time { font-size: .75rem; color: #64748b; margin-top: 3px; line-height: 1.4; }
-.history-right { flex-shrink: 0; }
-
-.badge { display: inline-block; font-size: .7rem; font-weight: 700; padding: 3px 10px; border-radius: 6px; letter-spacing: 0.3px; }
-.badge.before { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
-.badge.after { background: #faf5ff; color: #6b21a8; border: 1px solid #e9d5ff; }
-.badge.ok { background: #dcfce7; color: #166534; }
-.badge.modified { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-.edit-btn { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 12px; font-size: .8rem; color: #1e40af; cursor: pointer; font-weight: 700; transition: all 0.2s; }
-.edit-btn:active { background: #f8fafc; border-color: #94a3b8; }
-
-.loading, .empty { padding: 2rem; text-align: center; color: #64748b; font-size: .85rem; }
+.loading{padding:2rem;text-align:center;color:#7a8a9e;font-size:.85rem}
+.empty{padding:1.5rem;text-align:center;color:#7a8a9e;font-size:.82rem}
 </style>
 </head>
 <body>
-
 <div class="header">
   <div>
     <div class="header-title">点呼入力</div>
@@ -115,9 +95,7 @@ textarea { resize: vertical; min-height: 80px; }
 
   <!-- 今日の状況 -->
   <div class="status-bar">
-    <div class="status-title">
-      <span>📅</span> 今日の点呼状況
-    </div>
+    <div class="status-title">今日の点呼状況</div>
     <div class="status-grid">
       <div class="status-item" id="status-before">
         <div class="status-label">乗務前点呼</div>
@@ -147,44 +125,33 @@ textarea { resize: vertical; min-height: 80px; }
       </div>
     </div>
 
-    <!-- アルコール入力エリアを独立させて視認性強化 -->
-    <div class="alcohol-section" id="alcohol-section">
-      <div class="alcohol-row">
-        <div>
-          <label for="alcohol-val">アルコール検知値（mg/L）</label>
-          <input type="number" id="alcohol-val" placeholder="0.00" step="0.01" min="0" inputmode="decimal" oninput="checkAlcohol()">
-        </div>
-        <div><span class="alc-badge ok" id="alc-badge">正常</span></div>
+    <div class="alcohol-row">
+      <div>
+        <label>アルコール検知値（mg/L）</label>
+        <input type="number" id="alcohol-val" placeholder="0.00" step="0.01" min="0" oninput="checkAlcohol()">
       </div>
+      <div><span class="alc-badge ok" id="alc-badge">正常</span></div>
     </div>
 
-    <div class="form-group">
-      <label for="meter-val">メーター値（km）</label>
-      <input type="number" id="meter-val" placeholder="例：12345" inputmode="numeric">
+    <label>メーター値（km）</label>
+    <input type="number" id="meter-val" placeholder="例：12345">
+
+    <label>健康状態</label>
+    <div class="radio-group">
+      <div class="radio-btn active" id="h-good" onclick="setHealth('良好')">良好</div>
+      <div class="radio-btn" id="h-normal" onclick="setHealth('普通')">普通</div>
+      <div class="radio-btn" id="h-bad" onclick="setHealth('不良')">不良</div>
     </div>
 
-    <div class="form-group">
-      <label>健康状態</label>
-      <div class="radio-group">
-        <div class="radio-btn active" id="h-good" onclick="setHealth('良好')">良好</div>
-        <div class="radio-btn" id="h-normal" onclick="setHealth('普通')">普通</div>
-        <div class="radio-btn" id="h-bad" onclick="setHealth('不良')">不良</div>
-      </div>
+    <label>疲労・睡眠</label>
+    <div class="radio-group">
+      <div class="radio-btn active" id="f-good" onclick="setFatigue('問題なし')">問題なし</div>
+      <div class="radio-btn" id="f-tired" onclick="setFatigue('やや疲労')">やや疲労</div>
+      <div class="radio-btn" id="f-bad" onclick="setFatigue('疲労あり')">疲労あり</div>
     </div>
 
-    <div class="form-group">
-      <label>疲労・睡眠</label>
-      <div class="radio-group">
-        <div class="radio-btn active" id="f-good" onclick="setFatigue('問題なし')">問題なし</div>
-        <div class="radio-btn" id="f-tired" onclick="setFatigue('やや疲労')">やや疲労</div>
-        <div class="radio-btn" id="f-bad" onclick="setFatigue('疲労あり')">疲労あり</div>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label for="notes">特記事項</label>
-      <textarea id="notes" placeholder="特記事項（ルート変更、道路状況など）があれば入力してください"></textarea>
-    </div>
+    <label>特記事項</label>
+    <textarea id="notes" placeholder="特記事項があれば入力してください"></textarea>
 
     <button class="submit-btn" id="submit-btn" onclick="submitTenko()">点呼を送信する</button>
     <div class="msg" id="msg" style="display:none"></div>
@@ -192,7 +159,7 @@ textarea { resize: vertical; min-height: 80px; }
 
   <!-- 最近の記録 -->
   <div class="history-section">
-    <div class="history-header">最近の点呼記録（過去10件）</div>
+    <div class="history-header">最近の点呼記録</div>
     <div id="history-list"><div class="loading">読込中...</div></div>
   </div>
 
@@ -222,6 +189,7 @@ async function init(){
   companyId=profile.company_id;
   driverName=profile.driver_name||'ドライバー';
   document.getElementById('driver-name-header').textContent=driverName;
+  // driversテーブルからdriver_id取得
   var {data:driver}=await sb.from('drivers').select('id').eq('user_id',userId).single();
   if(driver) driverId=driver.id;
   loadTodayStatus();
@@ -271,17 +239,8 @@ function setType(t){
 function checkAlcohol(){
   var v=parseFloat(document.getElementById('alcohol-val').value)||0;
   var badge=document.getElementById('alc-badge');
-  var section=document.getElementById('alcohol-section');
-  if(v>=0.15){
-    badge.className='alc-badge ng';
-    badge.textContent='要確認';
-    if(section) section.classList.add('danger-alert');
-  }
-  else{
-    badge.className='alc-badge ok';
-    badge.textContent='正常';
-    if(section) section.classList.remove('danger-alert');
-  }
+  if(v>=0.15){badge.className='alc-badge ng';badge.textContent='要確認';}
+  else{badge.className='alc-badge ok';badge.textContent='正常';}
 }
 
 function setHealth(v){

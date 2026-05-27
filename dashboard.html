@@ -9,42 +9,55 @@
 body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;color:#0f1c35}
 .header{background:#fff;border-bottom:1px solid #e2e8f4;padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .header-left{display:flex;align-items:center;gap:12px}
-.logo{font-size:.95rem;font-weight:700;color:#0f1c35;letter-spacing:-.3px}
+.logo{font-size:.95rem;font-weight:700;color:#0f1c35}
 .company-badge{background:#e8f0fe;color:#1a5cd4;font-size:.75rem;font-weight:600;padding:3px 10px;border-radius:20px}
-.header-right{display:flex;align-items:center;gap:10px}
+.code-badge{background:#f0f4fa;color:#7a8a9e;font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:20px;cursor:pointer}
 .logout-btn{background:none;border:1px solid #d8e2f0;border-radius:8px;padding:6px 14px;font-size:.82rem;color:#5a6a82;cursor:pointer}
-.logout-btn:hover{background:#f7f9fc}
 .main{max-width:900px;margin:0 auto;padding:1.5rem 1rem}
+
 .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem}
 .stat-card{background:#fff;border-radius:12px;border:1px solid #e2e8f4;padding:1.25rem}
 .stat-label{font-size:.75rem;color:#7a8a9e;margin-bottom:6px}
-.stat-value{font-size:1.6rem;font-weight:700;color:#0f1c35}
+.stat-value{font-size:1.6rem;font-weight:700}
 .stat-sub{font-size:.75rem;color:#7a8a9e;margin-top:4px}
 .stat-card.green .stat-value{color:#1d9e75}
 .stat-card.blue .stat-value{color:#1a5cd4}
 .stat-card.orange .stat-value{color:#d97706}
+
 .section{background:#fff;border-radius:12px;border:1px solid #e2e8f4;margin-bottom:1.5rem;overflow:hidden}
-.section-header{padding:1rem 1.25rem;border-bottom:1px solid #f0f4fa;display:flex;align-items:center;justify-content:space-between}
-.section-title{font-size:.9rem;font-weight:700;color:#0f1c35}
+.section-header{padding:1rem 1.25rem;border-bottom:1px solid #f0f4fa;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem}
+.section-title{font-size:.9rem;font-weight:700}
+.section-actions{display:flex;gap:.5rem;align-items:center}
+.date-nav{display:flex;align-items:center;gap:.5rem}
+.date-btn{background:#f0f4fa;border:1px solid #d8e2f0;border-radius:6px;padding:4px 10px;font-size:.78rem;cursor:pointer}
+.date-label{font-size:.82rem;font-weight:600;color:#0f1c35}
 .add-btn{background:#1a5cd4;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:.8rem;font-weight:600;cursor:pointer}
-.add-btn:hover{background:#1449b0}
-.table{width:100%;border-collapse:collapse}
-.table th{font-size:.75rem;color:#7a8a9e;font-weight:600;padding:.75rem 1.25rem;text-align:left;border-bottom:1px solid #f0f4fa;background:#fafbfd}
-.table td{font-size:.85rem;color:#0f1c35;padding:.85rem 1.25rem;border-bottom:1px solid #f8f9fc}
-.table tr:last-child td{border-bottom:none}
-.table tr:hover td{background:#fafbfd}
+
+/* 点呼状況テーブル */
+.tenko-table{width:100%;border-collapse:collapse}
+.tenko-table th{font-size:.75rem;color:#7a8a9e;font-weight:600;padding:.75rem 1rem;text-align:left;border-bottom:1px solid #f0f4fa;background:#fafbfd;white-space:nowrap}
+.tenko-table td{font-size:.82rem;color:#0f1c35;padding:.85rem 1rem;border-bottom:1px solid #f8f9fc;white-space:nowrap}
+.tenko-table tr:last-child td{border-bottom:none}
+.tenko-table tr:hover td{background:#fafbfd}
+
 .badge{display:inline-block;font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:20px}
-.badge.ok{background:#dcfce7;color:#166534}
-.tenko-btn{background:#f0f4fa;border:1px solid #d8e2f0;border-radius:6px;padding:5px 12px;font-size:.78rem;color:#1a5cd4;cursor:pointer;font-weight:600}
-.tenko-btn:hover{background:#e8f0fe}
-.empty{padding:2.5rem;text-align:center;color:#7a8a9e;font-size:.85rem}
-.loading{padding:2rem;text-align:center;color:#7a8a9e;font-size:.85rem}
+.badge.done{background:#dcfce7;color:#166534}
+.badge.pending{background:#fef3c7;color:#92400e}
+.badge.none{background:#f3f4f6;color:#9ca3af}
+.badge.face{background:#e8f0fe;color:#1a5cd4}
+.badge.phone{background:#f3e8ff;color:#7c3aed}
+.badge.it{background:#fef3c7;color:#92400e}
+.badge.modified{background:#fee2e2;color:#991b1b}
+
+.tenko-btn{background:#f0f4fa;border:1px solid #d8e2f0;border-radius:6px;padding:5px 10px;font-size:.75rem;color:#1a5cd4;cursor:pointer;font-weight:600}
+
 .action-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;padding:1rem}
 .action-card{border:1px solid #e2e8f4;border-radius:10px;padding:1rem;cursor:pointer;transition:all .15s}
 .action-card:hover{border-color:#1a5cd4;background:#f0f4fa}
 .action-icon{font-size:1.4rem;margin-bottom:.5rem}
-.action-title{font-size:.85rem;font-weight:700;color:#0f1c35;margin-bottom:2px}
+.action-title{font-size:.85rem;font-weight:700;margin-bottom:2px}
 .action-desc{font-size:.75rem;color:#7a8a9e}
+
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center}
 .overlay.show{display:flex}
 .modal{background:#fff;border-radius:14px;padding:1.5rem;width:90%;max-width:360px}
@@ -56,6 +69,12 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
 .modal-cancel{background:#f0f4fa;border:1px solid #d8e2f0;color:#5a6a82}
 .modal-submit{background:#1a5cd4;border:none;color:#fff}
 .modal-msg{font-size:.8rem;color:#e24b4a;margin-top:.5rem;text-align:center}
+
+.code-info{background:#f7f9fc;border:1px solid #e2e8f4;border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem;font-size:.82rem;color:#5a6a82}
+.code-value{font-size:1.1rem;font-weight:700;color:#1a5cd4;letter-spacing:2px;margin-top:4px}
+
+.loading{padding:2rem;text-align:center;color:#7a8a9e;font-size:.85rem}
+.empty{padding:2rem;text-align:center;color:#7a8a9e;font-size:.85rem}
 </style>
 </head>
 <body>
@@ -63,12 +82,13 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
   <div class="header-left">
     <span class="logo">点呼管理システム</span>
     <span class="company-badge" id="company-name">読込中...</span>
+    <span class="code-badge" id="company-code-badge" onclick="showCodeModal()" title="会社コードを確認">🔑 コード確認</span>
   </div>
-  <div class="header-right">
-    <button class="logout-btn" onclick="logout()">ログアウト</button>
-  </div>
+  <button class="logout-btn" onclick="logout()">ログアウト</button>
 </div>
+
 <div class="main">
+
   <div class="stat-grid">
     <div class="stat-card green">
       <div class="stat-label">今日の点呼完了</div>
@@ -86,6 +106,25 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
       <div class="stat-sub">本日分</div>
     </div>
   </div>
+
+  <!-- 点呼状況一覧 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">点呼状況</span>
+      <div class="section-actions">
+        <div class="date-nav">
+          <button class="date-btn" onclick="changeDate(-1)">◀</button>
+          <span class="date-label" id="date-label">-</span>
+          <button class="date-btn" onclick="changeDate(1)">▶</button>
+        </div>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <div id="tenko-status-list"><div class="loading">読込中...</div></div>
+    </div>
+  </div>
+
+  <!-- ドライバー一覧 -->
   <div class="section">
     <div class="section-header">
       <span class="section-title">ドライバー一覧</span>
@@ -93,15 +132,15 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
     </div>
     <div id="driver-list"><div class="loading">読込中...</div></div>
   </div>
+
+  <!-- クイックアクション -->
   <div class="section">
-    <div class="section-header">
-      <span class="section-title">クイックアクション</span>
-    </div>
+    <div class="section-header"><span class="section-title">クイックアクション</span></div>
     <div class="action-grid">
       <div class="action-card" onclick="window.location.href='tenko.html'">
         <div class="action-icon">📋</div>
         <div class="action-title">点呼を記録する</div>
-        <div class="action-desc">乗務前・乗務後の点呼入力</div>
+        <div class="action-desc">対面・電話点呼の入力</div>
       </div>
       <div class="action-card" onclick="window.location.href='records.html'">
         <div class="action-icon">📊</div>
@@ -113,19 +152,22 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
         <div class="action-title">ドライバーを追加</div>
         <div class="action-desc">新規ドライバーの登録</div>
       </div>
-      <div class="action-card" onclick="alert('設定画面は次のステップで作成します')">
-        <div class="action-icon">⚙️</div>
-        <div class="action-title">設定</div>
-        <div class="action-desc">会社情報・プラン管理</div>
+      <div class="action-card" onclick="showCodeModal()">
+        <div class="action-icon">🔑</div>
+        <div class="action-title">会社コードを確認</div>
+        <div class="action-desc">ドライバー登録用コード</div>
       </div>
     </div>
   </div>
+
 </div>
+
+<!-- ドライバー追加モーダル -->
 <div class="overlay" id="driver-modal">
   <div class="modal">
     <h2>ドライバーを追加</h2>
     <label>氏名</label>
-    <input type="text" id="d-name" placeholder="例：田村 太郎">
+    <input type="text" id="d-name" placeholder="例：田村 守">
     <label>車両番号</label>
     <input type="text" id="d-vehicle" placeholder="例：横浜 100 あ 1234">
     <label>電話番号</label>
@@ -137,66 +179,142 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
     <div class="modal-msg" id="d-msg"></div>
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4"></script>
+
+<!-- 会社コードモーダル -->
+<div class="overlay" id="code-modal">
+  <div class="modal">
+    <h2>🔑 会社コード</h2>
+    <div class="code-info">
+      ドライバーが新規登録する際に必要なコードです。<br>このコードをドライバーに伝えてください。
+      <div class="code-value" id="code-display">-</div>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-submit" onclick="document.getElementById('code-modal').classList.remove('show')">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 var SURL='https://hyvjvcdahahrznhujtaz.supabase.co';
-var SKEY='sb_publishable_JL-WVrBlhsj--cIG3r7imQ_24EOdkL5';
+var SKEY='sb_publishable_DVTMJanZg1cca3jqNjk6mmg_ZY_YmjMo';
 var sb=window.supabase.createClient(SURL,SKEY);
 var companyId=null;
 var userId=null;
+var companyCode=null;
+var currentDate=new Date();
+
+function formatDate(d){
+  return d.toISOString().split('T')[0];
+}
+function formatDateJa(d){
+  return d.getFullYear()+'/'+(d.getMonth()+1).toString().padStart(2,'0')+'/'+d.getDate().toString().padStart(2,'0');
+}
 
 async function logError(page,message,detail){
-  try{
-    await sb.from('error_logs').insert({
-      company_id:companyId,user_id:userId||null,
-      page:page,error_message:message,error_detail:detail||''
-    });
-  }catch(e){}
+  try{await sb.from('error_logs').insert({company_id:companyId,user_id:userId||null,page:page,error_message:message,error_detail:detail||''});}catch(e){}
 }
 
 async function init(){
   var {data:{session}}=await sb.auth.getSession();
   if(!session){window.location.href='index.html';return;}
   userId=session.user.id;
-  var {data:profile,error:pe}=await sb.from('user_profiles').select('company_id').eq('id',userId).single();
-  if(pe||!profile){logError('dashboard.html','プロフィール取得失敗',pe?.message);window.location.href='index.html';return;}
+  var {data:profile,error:pe}=await sb.from('user_profiles').select('company_id,role').eq('id',userId).single();
+  if(pe||!profile){window.location.href='index.html';return;}
+  if(profile.role==='driver'){window.location.href='driver.html';return;}
   companyId=profile.company_id;
-  var {data:company,error:ce}=await sb.from('companies').select('name').eq('id',companyId).single();
-  if(ce) logError('dashboard.html','会社名取得失敗',ce.message);
-  if(company) document.getElementById('company-name').textContent=company.name;
+  var {data:company}=await sb.from('companies').select('name,company_code').eq('id',companyId).single();
+  if(company){
+    document.getElementById('company-name').textContent=company.name;
+    companyCode=company.company_code;
+    document.getElementById('code-display').textContent=companyCode||'未設定';
+  }
+  document.getElementById('date-label').textContent=formatDateJa(currentDate);
+  loadTenkoStatus();
   loadDrivers();
   loadStats();
 }
 
+function changeDate(d){
+  currentDate.setDate(currentDate.getDate()+d);
+  document.getElementById('date-label').textContent=formatDateJa(currentDate);
+  loadTenkoStatus();
+}
+
+async function loadTenkoStatus(){
+  var dateStr=formatDate(currentDate);
+  var {data:drivers}=await sb.from('drivers').select('id,name,vehicle_number').eq('company_id',companyId).order('name');
+  var {data:records}=await sb.from('tenko_records').select('*').eq('company_id',companyId).eq('date',dateStr);
+  var el=document.getElementById('tenko-status-list');
+  if(!drivers||drivers.length===0){el.innerHTML='<div class="empty">ドライバーが登録されていません</div>';return;}
+
+  var rows=drivers.map(d=>{
+    var before=records&&records.find(r=>r.driver_id===d.id&&r.tenko_type==='乗務前');
+    var after=records&&records.find(r=>r.driver_id===d.id&&r.tenko_type==='乗務後');
+
+    function methodBadge(r){
+      if(!r) return '<span class="badge none">未実施</span>';
+      var m=r.method||'';
+      var cls=m==='対面'?'face':m==='電話'?'phone':'it';
+      var mod=r.is_modified?'<span class="badge modified">修正済</span>':'';
+      return `<span class="badge ${cls}">${m||'IT点呼'}</span>${mod}`;
+    }
+
+    function alcDisplay(r){
+      if(!r) return '-';
+      var v=parseFloat(r.alcohol_value)||0;
+      return v>=0.15?`<span style="color:#e24b4a;font-weight:700">${v.toFixed(2)}</span>`:v.toFixed(2);
+    }
+
+    return `<tr>
+      <td><strong>${d.name}</strong></td>
+      <td>${d.vehicle_number||'-'}</td>
+      <td>${methodBadge(before)}</td>
+      <td>${alcDisplay(before)}</td>
+      <td>${before?before.health_status||'-':'-'}</td>
+      <td>${methodBadge(after)}</td>
+      <td>${alcDisplay(after)}</td>
+      <td>${after?after.health_status||'-':'-'}</td>
+      <td><button class="tenko-btn" onclick="window.location.href='tenko.html?driver=${d.id}'">入力</button></td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML=`<table class="tenko-table">
+    <thead><tr>
+      <th>ドライバー</th><th>車両</th>
+      <th>乗務前方法</th><th>乗務前ALc</th><th>乗務前健康</th>
+      <th>乗務後方法</th><th>乗務後Alc</th><th>乗務後健康</th>
+      <th>操作</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
 async function loadDrivers(){
-  var {data:drivers,error}=await sb.from('drivers').select('*').eq('company_id',companyId).order('created_at',{ascending:false});
+  var {data:drivers,error}=await sb.from('drivers').select('*').eq('company_id',companyId).order('name');
   if(error){logError('dashboard.html','ドライバー取得失敗',error.message);}
   var el=document.getElementById('driver-list');
   if(!drivers||drivers.length===0){
-    el.innerHTML='<div class="empty">ドライバーがまだ登録されていません<br>「＋ 追加」から登録してください</div>';
-    document.getElementById('stat-drivers').textContent='0';
-    return;
+    el.innerHTML='<div class="empty">ドライバーがまだ登録されていません</div>';
+    document.getElementById('stat-drivers').textContent='0';return;
   }
   document.getElementById('stat-drivers').textContent=drivers.length;
-  var rows=drivers.map(d=>`
-    <tr>
-      <td>${d.name||'-'}</td>
-      <td>${d.vehicle_number||'-'}</td>
-      <td>${d.phone||'-'}</td>
-      <td><span class="badge ok">アクティブ</span></td>
-      <td><button class="tenko-btn" onclick="window.location.href='tenko.html?driver=${d.id}'">点呼入力</button></td>
-    </tr>
-  `).join('');
-  el.innerHTML=`<table class="table">
+  var rows=drivers.map(d=>`<tr>
+    <td>${d.name||'-'}</td>
+    <td>${d.vehicle_number||'-'}</td>
+    <td>${d.phone||'-'}</td>
+    <td><span class="badge done">アクティブ</span></td>
+    <td><button class="tenko-btn" onclick="window.location.href='tenko.html?driver=${d.id}'">点呼入力</button></td>
+  </tr>`).join('');
+  el.innerHTML=`<table class="tenko-table">
     <thead><tr><th>氏名</th><th>車両番号</th><th>電話番号</th><th>状態</th><th>操作</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
 }
 
 async function loadStats(){
-  var today=new Date().toISOString().split('T')[0];
-  var {data:records,error:re}=await sb.from('tenko_records').select('id').eq('company_id',companyId).eq('date',today);
-  if(re) logError('dashboard.html','統計取得失敗',re.message);
+  var today=formatDate(new Date());
+  var {data:records}=await sb.from('tenko_records').select('id').eq('company_id',companyId).eq('date',today);
   var done=records?records.length:0;
   document.getElementById('stat-done').textContent=done;
   var {data:drivers}=await sb.from('drivers').select('id').eq('company_id',companyId);
@@ -204,6 +322,7 @@ async function loadStats(){
   document.getElementById('stat-pending').textContent=Math.max(0,driverCount*2-done);
 }
 
+function showCodeModal(){document.getElementById('code-modal').classList.add('show');}
 function openDriverModal(){document.getElementById('driver-modal').classList.add('show');}
 function closeDriverModal(){document.getElementById('driver-modal').classList.remove('show');document.getElementById('d-msg').textContent='';}
 
@@ -221,12 +340,10 @@ async function addDriver(){
   document.getElementById('d-phone').value='';
   loadDrivers();
   loadStats();
+  loadTenkoStatus();
 }
 
-async function logout(){
-  await sb.auth.signOut();
-  window.location.href='index.html';
-}
+async function logout(){await sb.auth.signOut();window.location.href='index.html';}
 init();
 </script>
 </body>

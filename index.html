@@ -18,16 +18,48 @@ input{width:100%;border:1px solid #d8e2f0;border-radius:8px;padding:10px 12px;fo
 .err{color:#e24b4a}
 .ok{color:#1d9e75}
 .toggle{font-size:.82rem;color:#1a5cd4;text-align:center;margin-top:1rem;cursor:pointer}
+.reset{font-size:.82rem;color:#7a8a9e;text-align:center;margin-top:.5rem;cursor:pointer}
+.role-btns{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.25rem}
+.role-btn{padding:12px;border-radius:10px;border:2px solid #e2e8f4;background:#fafbfd;cursor:pointer;text-align:center;transition:all .15s}
+.role-btn.active{border-color:#1a5cd4;background:#e8f0fe}
+.role-btn-icon{font-size:1.3rem;margin-bottom:4px}
+.role-btn-label{font-size:.82rem;font-weight:700;color:#0f1c35}
 </style>
 </head>
 <body>
 <div class="card">
   <h1>点呼管理システム</h1>
   <p class="sub" id="lbl">アカウントにログイン</p>
-  <div id="sf" style="display:none">
+
+  <!-- 新規登録時のロール選択 -->
+  <div id="role-select" style="display:none">
+    <label>登録区分</label>
+    <div class="role-btns">
+      <div class="role-btn active" id="role-admin" onclick="setRole('admin')">
+        <div class="role-btn-icon">🏢</div>
+        <div class="role-btn-label">管理者</div>
+      </div>
+      <div class="role-btn" id="role-driver" onclick="setRole('driver')">
+        <div class="role-btn-icon">🚗</div>
+        <div class="role-btn-label">ドライバー</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 管理者登録：会社名 -->
+  <div id="sf-company" style="display:none">
     <label>会社名</label>
     <input type="text" id="cn" placeholder="例：JLS合同会社">
   </div>
+
+  <!-- ドライバー登録：会社コード・氏名 -->
+  <div id="sf-driver" style="display:none">
+    <label>会社コード</label>
+    <input type="text" id="company-code" placeholder="管理者から受け取ったコード" style="text-transform:uppercase">
+    <label>氏名</label>
+    <input type="text" id="driver-name" placeholder="例：田村 守">
+  </div>
+
   <label>メールアドレス</label>
   <input type="email" id="em" placeholder="example@email.com">
   <label>パスワード</label>
@@ -35,21 +67,33 @@ input{width:100%;border:1px solid #d8e2f0;border-radius:8px;padding:10px 12px;fo
   <button class="btn" id="btn">ログイン</button>
   <div class="msg" id="msg"></div>
   <div class="toggle" id="tgl">アカウントを新規作成</div>
-  <div class="toggle" id="reset-lnk" onclick="window.location.href='reset.html'" style="color:#7a8a9e;margin-top:.5rem">パスワードをお忘れの方</div>
+  <div class="reset" onclick="window.location.href='reset.html'">パスワードをお忘れの方</div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 var SURL='https://hyvjvcdahahrznhujtaz.supabase.co';
-var SKEY='sb_publishable_JL-WVrBlhsj--cIG3r7imQ_24EOdkL5';
+var SKEY='sb_publishable_DVTMJanZg1cca3jqNjk6mmg_ZY_YmjMo';
 var sb=window.supabase.createClient(SURL,SKEY);
 var isUp=false;
+var selectedRole='admin';
+
+function setRole(role){
+  selectedRole=role;
+  document.getElementById('role-admin').classList.toggle('active',role==='admin');
+  document.getElementById('role-driver').classList.toggle('active',role==='driver');
+  document.getElementById('sf-company').style.display=role==='admin'?'block':'none';
+  document.getElementById('sf-driver').style.display=role==='driver'?'block':'none';
+}
 
 document.getElementById('tgl').addEventListener('click',function(){
   isUp=!isUp;
   document.getElementById('lbl').textContent=isUp?'新規アカウント作成':'アカウントにログイン';
   document.getElementById('btn').textContent=isUp?'登録する':'ログイン';
   document.getElementById('tgl').textContent=isUp?'ログインに戻る':'アカウントを新規作成';
-  document.getElementById('sf').style.display=isUp?'block':'none';
+  document.getElementById('role-select').style.display=isUp?'block':'none';
+  document.getElementById('sf-company').style.display=isUp&&selectedRole==='admin'?'block':'none';
+  document.getElementById('sf-driver').style.display=isUp&&selectedRole==='driver'?'block':'none';
   document.getElementById('msg').textContent='';
 });
 
@@ -60,18 +104,46 @@ document.getElementById('btn').addEventListener('click',async function(){
   var btn=document.getElementById('btn');
   if(!em||!pw){msg.className='msg err';msg.textContent='入力してください';return;}
   btn.disabled=true;
+  msg.textContent='';
+
   if(isUp){
-    var cn=document.getElementById('cn').value.trim();
-    if(!cn){msg.className='msg err';msg.textContent='会社名を入力してください';btn.disabled=false;return;}
-    var r=await sb.auth.signUp({email:em,password:pw});
-    if(r.error){msg.className='msg err';msg.textContent=r.error.message;btn.disabled=false;return;}
-    var c=await sb.from('companies').insert({name:cn}).select().single();
-    await sb.from('user_profiles').insert({id:r.data.user.id,company_id:c.data.id,role:'admin'});
-    msg.className='msg ok';msg.textContent='登録完了！確認メールを送信しました。';
+    // 新規登録
+    if(selectedRole==='admin'){
+      var cn=document.getElementById('cn').value.trim();
+      if(!cn){msg.className='msg err';msg.textContent='会社名を入力してください';btn.disabled=false;return;}
+      var r=await sb.auth.signUp({email:em,password:pw});
+      if(r.error){msg.className='msg err';msg.textContent=r.error.message;btn.disabled=false;return;}
+      var c=await sb.from('companies').insert({name:cn}).select().single();
+      if(c.error){msg.className='msg err';msg.textContent='会社登録エラー: '+c.error.message;btn.disabled=false;return;}
+      await sb.from('user_profiles').insert({id:r.data.user.id,company_id:c.data.id,role:'admin'});
+      msg.className='msg ok';msg.textContent='登録完了！確認メールを送信しました。';
+    } else {
+      // ドライバー登録
+      var code=document.getElementById('company-code').value.trim().toUpperCase();
+      var dname=document.getElementById('driver-name').value.trim();
+      if(!code){msg.className='msg err';msg.textContent='会社コードを入力してください';btn.disabled=false;return;}
+      if(!dname){msg.className='msg err';msg.textContent='氏名を入力してください';btn.disabled=false;return;}
+      // 会社コードで会社を検索
+      var {data:company,error:ce}=await sb.from('companies').select('id').eq('company_code',code).single();
+      if(ce||!company){msg.className='msg err';msg.textContent='会社コードが正しくありません';btn.disabled=false;return;}
+      var r2=await sb.auth.signUp({email:em,password:pw});
+      if(r2.error){msg.className='msg err';msg.textContent=r2.error.message;btn.disabled=false;return;}
+      await sb.from('user_profiles').insert({id:r2.data.user.id,company_id:company.id,role:'driver',driver_name:dname});
+      // driversテーブルにも追加
+      await sb.from('drivers').insert({company_id:company.id,name:dname,user_id:r2.data.user.id});
+      msg.className='msg ok';msg.textContent='登録完了！確認メールを送信しました。';
+    }
   } else {
-    var r2=await sb.auth.signInWithPassword({email:em,password:pw});
-    if(r2.error){msg.className='msg err';msg.textContent='メールまたはパスワードが違います';btn.disabled=false;return;}
-    window.location.href='dashboard.html';
+    // ログイン
+    var r3=await sb.auth.signInWithPassword({email:em,password:pw});
+    if(r3.error){msg.className='msg err';msg.textContent='メールまたはパスワードが違います';btn.disabled=false;return;}
+    // roleで振り分け
+    var {data:profile}=await sb.from('user_profiles').select('role').eq('id',r3.data.user.id).single();
+    if(profile&&profile.role==='driver'){
+      window.location.href='driver.html';
+    } else {
+      window.location.href='dashboard.html';
+    }
   }
   btn.disabled=false;
 });
