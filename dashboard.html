@@ -182,7 +182,7 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-var SURL='https://hyvjvcdahahrznhujtaz.supabase.co';
+var SURL='https://hyvjvcdahahrznhujtaz.supabase.co ';
 var SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh5dmp2Y2RhaGFocnpuaHVqdGF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4NTE3MDcsImV4cCI6MjA5NTQyNzcwN30.Zdl8yaFH64xEbiEzi7v8dsd2iu3CKaH96TBNqigJZV4';
 var sb=window.supabase.createClient(SURL,SKEY);
 var companyId=null;
@@ -309,13 +309,33 @@ async function loadDrivers(){
   if(!drivers||drivers.length===0){
     el.innerHTML='<div class="empty">ドライバーがまだ登録されていません</div>';return;
   }
-  var rows=drivers.map(d=>`<tr>
-    <td>${d.name||'-'}</td>
-    <td>${d.vehicle_number||'-'}</td>
-    <td>${d.phone||'-'}</td>
-    <td><span class="badge done">アクティブ</span></td>
-    <td><button class="tenko-btn" onclick="window.location.href='tenko.html?driver=${d.id}'">点呼入力</button></td>
-  </tr>`).join('');
+
+  // 今日の点呼記録を取得
+  var today=getTodayJST();
+  var {data:records}=await sb.from('tenko_records').select('driver_id,tenko_type').eq('company_id',companyId).eq('date',today);
+
+  var rows=drivers.map(d=>{
+    var hasBefore=records&&records.some(r=>r.driver_id===d.id&&r.tenko_type==='乗務前');
+    var hasAfter=records&&records.some(r=>r.driver_id===d.id&&r.tenko_type==='乗務後');
+
+    var statusBadge;
+    if(hasAfter){
+      statusBadge='<span class="badge" style="background:#f3f4f6;color:#6b7280">業務終了</span>';
+    } else if(hasBefore){
+      statusBadge='<span class="badge done">稼働中</span>';
+    } else {
+      statusBadge='<span class="badge" style="background:#fef3c7;color:#92400e">待機中</span>';
+    }
+
+    return `<tr>
+      <td>${d.name||'-'}</td>
+      <td>${d.vehicle_number||'-'}</td>
+      <td>${d.phone||'-'}</td>
+      <td>${statusBadge}</td>
+      <td><button class="tenko-btn" onclick="window.location.href='tenko.html?driver=${d.id}'">点呼入力</button></td>
+    </tr>`;
+  }).join('');
+
   el.innerHTML=`<table class="tenko-table">
     <thead><tr><th>氏名</th><th>車両番号</th><th>電話番号</th><th>状態</th><th>操作</th></tr></thead>
     <tbody>${rows}</tbody>
