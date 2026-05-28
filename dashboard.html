@@ -27,13 +27,11 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
 .section{background:#fff;border-radius:12px;border:1px solid #e2e8f4;margin-bottom:1.5rem;overflow:hidden}
 .section-header{padding:1rem 1.25rem;border-bottom:1px solid #f0f4fa;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem}
 .section-title{font-size:.9rem;font-weight:700}
-.section-actions{display:flex;gap:.5rem;align-items:center}
 .date-nav{display:flex;align-items:center;gap:.5rem}
 .date-btn{background:#f0f4fa;border:1px solid #d8e2f0;border-radius:6px;padding:4px 10px;font-size:.78rem;cursor:pointer}
 .date-label{font-size:.82rem;font-weight:600;color:#0f1c35}
 .add-btn{background:#1a5cd4;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:.8rem;font-weight:600;cursor:pointer}
 
-/* 点呼状況テーブル */
 .tenko-table{width:100%;border-collapse:collapse}
 .tenko-table th{font-size:.75rem;color:#7a8a9e;font-weight:600;padding:.75rem 1rem;text-align:left;border-bottom:1px solid #f0f4fa;background:#fafbfd;white-space:nowrap}
 .tenko-table td{font-size:.82rem;color:#0f1c35;padding:.85rem 1rem;border-bottom:1px solid #f8f9fc;white-space:nowrap}
@@ -42,7 +40,6 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
 
 .badge{display:inline-block;font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:20px}
 .badge.done{background:#dcfce7;color:#166534}
-.badge.pending{background:#fef3c7;color:#92400e}
 .badge.none{background:#f3f4f6;color:#9ca3af}
 .badge.face{background:#e8f0fe;color:#1a5cd4}
 .badge.phone{background:#f3e8ff;color:#7c3aed}
@@ -69,10 +66,8 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
 .modal-cancel{background:#f0f4fa;border:1px solid #d8e2f0;color:#5a6a82}
 .modal-submit{background:#1a5cd4;border:none;color:#fff}
 .modal-msg{font-size:.8rem;color:#e24b4a;margin-top:.5rem;text-align:center}
-
 .code-info{background:#f7f9fc;border:1px solid #e2e8f4;border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem;font-size:.82rem;color:#5a6a82}
 .code-value{font-size:1.1rem;font-weight:700;color:#1a5cd4;letter-spacing:2px;margin-top:4px}
-
 .loading{padding:2rem;text-align:center;color:#7a8a9e;font-size:.85rem}
 .empty{padding:2rem;text-align:center;color:#7a8a9e;font-size:.85rem}
 </style>
@@ -82,18 +77,17 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
   <div class="header-left">
     <span class="logo">点呼管理システム</span>
     <span class="company-badge" id="company-name">読込中...</span>
-    <span class="code-badge" id="company-code-badge" onclick="showCodeModal()" title="会社コードを確認">🔑 コード確認</span>
+    <span class="code-badge" onclick="showCodeModal()">🔑 コード確認</span>
   </div>
   <button class="logout-btn" onclick="logout()">ログアウト</button>
 </div>
 
 <div class="main">
-
   <div class="stat-grid">
     <div class="stat-card green">
       <div class="stat-label">今日の点呼完了</div>
       <div class="stat-value" id="stat-done">-</div>
-      <div class="stat-sub">乗務前＋乗務後</div>
+      <div class="stat-sub">ドライバー×区分でカウント</div>
     </div>
     <div class="stat-card blue">
       <div class="stat-label">登録ドライバー数</div>
@@ -107,16 +101,13 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
     </div>
   </div>
 
-  <!-- 点呼状況一覧 -->
   <div class="section">
     <div class="section-header">
       <span class="section-title">点呼状況</span>
-      <div class="section-actions">
-        <div class="date-nav">
-          <button class="date-btn" onclick="changeDate(-1)">◀</button>
-          <span class="date-label" id="date-label">-</span>
-          <button class="date-btn" onclick="changeDate(1)">▶</button>
-        </div>
+      <div class="date-nav">
+        <button class="date-btn" onclick="changeDate(-1)">◀</button>
+        <span class="date-label" id="date-label">-</span>
+        <button class="date-btn" onclick="changeDate(1)">▶</button>
       </div>
     </div>
     <div style="overflow-x:auto">
@@ -124,7 +115,6 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
     </div>
   </div>
 
-  <!-- ドライバー一覧 -->
   <div class="section">
     <div class="section-header">
       <span class="section-title">ドライバー一覧</span>
@@ -133,7 +123,6 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
     <div id="driver-list"><div class="loading">読込中...</div></div>
   </div>
 
-  <!-- クイックアクション -->
   <div class="section">
     <div class="section-header"><span class="section-title">クイックアクション</span></div>
     <div class="action-grid">
@@ -159,10 +148,8 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
       </div>
     </div>
   </div>
-
 </div>
 
-<!-- ドライバー追加モーダル -->
 <div class="overlay" id="driver-modal">
   <div class="modal">
     <h2>ドライバーを追加</h2>
@@ -180,12 +167,11 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
   </div>
 </div>
 
-<!-- 会社コードモーダル -->
 <div class="overlay" id="code-modal">
   <div class="modal">
     <h2>🔑 会社コード</h2>
     <div class="code-info">
-      ドライバーが新規登録する際に必要なコードです。<br>このコードをドライバーに伝えてください。
+      ドライバーが新規登録する際に必要なコードです。
       <div class="code-value" id="code-display">-</div>
     </div>
     <div class="modal-btns">
@@ -204,23 +190,28 @@ var userId=null;
 var companyCode=null;
 var currentDate=new Date();
 
-function formatDate(d){
-  return d.toISOString().split('T')[0];
-}
-function formatDateJa(d){
-  return d.getFullYear()+'/'+(d.getMonth()+1).toString().padStart(2,'0')+'/'+d.getDate().toString().padStart(2,'0');
+function getTodayJST(){
+  var now=new Date();
+  var jst=new Date(now.getTime()+9*60*60*1000);
+  return jst.toISOString().split('T')[0];
 }
 
-async function logError(page,message,detail){
-  try{await sb.from('error_logs').insert({company_id:companyId,user_id:userId||null,page:page,error_message:message,error_detail:detail||''});}catch(e){}
+function formatDate(d){
+  var jst=new Date(d.getTime()+9*60*60*1000);
+  return jst.toISOString().split('T')[0];
+}
+
+function formatDateJa(d){
+  var jst=new Date(d.getTime()+9*60*60*1000);
+  return jst.getFullYear()+'/'+(jst.getMonth()+1).toString().padStart(2,'0')+'/'+jst.getDate().toString().padStart(2,'0');
 }
 
 async function init(){
   var {data:{session}}=await sb.auth.getSession();
   if(!session){window.location.href='index.html';return;}
   userId=session.user.id;
-  var {data:profile,error:pe}=await sb.from('user_profiles').select('company_id,role').eq('id',userId).single();
-  if(pe||!profile){window.location.href='index.html';return;}
+  var {data:profile}=await sb.from('user_profiles').select('company_id,role').eq('id',userId).single();
+  if(!profile){window.location.href='index.html';return;}
   if(profile.role==='driver'){window.location.href='driver.html';return;}
   companyId=profile.company_id;
   var {data:company}=await sb.from('companies').select('name,company_code').eq('id',companyId).single();
@@ -244,20 +235,22 @@ function changeDate(d){
 async function loadTenkoStatus(){
   var dateStr=formatDate(currentDate);
   var {data:drivers}=await sb.from('drivers').select('id,name,vehicle_number').eq('company_id',companyId).order('name');
-  var {data:records}=await sb.from('tenko_records').select('*').eq('company_id',companyId).eq('date',dateStr);
+  // created_atの降順で取得→同じ区分・ドライバーの最新レコードをfindで取得
+  var {data:records}=await sb.from('tenko_records').select('*').eq('company_id',companyId).eq('date',dateStr).order('created_at',{ascending:false});
   var el=document.getElementById('tenko-status-list');
   if(!drivers||drivers.length===0){el.innerHTML='<div class="empty">ドライバーが登録されていません</div>';return;}
 
   var rows=drivers.map(d=>{
+    // 最新のレコードを取得（created_at降順なのでfindで最初に見つかったものが最新）
     var before=records&&records.find(r=>r.driver_id===d.id&&r.tenko_type==='乗務前');
     var after=records&&records.find(r=>r.driver_id===d.id&&r.tenko_type==='乗務後');
 
     function methodBadge(r){
       if(!r) return '<span class="badge none">未実施</span>';
-      var m=r.method||'';
+      var m=r.method||'IT点呼';
       var cls=m==='対面'?'face':m==='電話'?'phone':'it';
       var mod=r.is_modified?'<span class="badge modified">修正済</span>':'';
-      return `<span class="badge ${cls}">${m||'IT点呼'}</span>${mod}`;
+      return `<span class="badge ${cls}">${m}</span>${mod}`;
     }
 
     function alcDisplay(r){
@@ -282,7 +275,7 @@ async function loadTenkoStatus(){
   el.innerHTML=`<table class="tenko-table">
     <thead><tr>
       <th>ドライバー</th><th>車両</th>
-      <th>乗務前方法</th><th>乗務前ALc</th><th>乗務前健康</th>
+      <th>乗務前方法</th><th>乗務前Alc</th><th>乗務前健康</th>
       <th>乗務後方法</th><th>乗務後Alc</th><th>乗務後健康</th>
       <th>操作</th>
     </tr></thead>
@@ -290,15 +283,32 @@ async function loadTenkoStatus(){
   </table>`;
 }
 
+async function loadStats(){
+  var today=getTodayJST();
+  var {data:drivers}=await sb.from('drivers').select('id').eq('company_id',companyId);
+  var driverCount=drivers?drivers.length:0;
+  document.getElementById('stat-drivers').textContent=driverCount;
+
+  // 各ドライバーの乗務前・乗務後それぞれ1回としてカウント
+  var {data:records}=await sb.from('tenko_records').select('driver_id,tenko_type').eq('company_id',companyId).eq('date',today);
+
+  // ユニークな（driver_id + tenko_type）の組み合わせをカウント
+  var unique=new Set();
+  if(records){
+    records.forEach(r=>unique.add(r.driver_id+'_'+r.tenko_type));
+  }
+  var done=unique.size;
+  var total=driverCount*2;
+  document.getElementById('stat-done').textContent=done;
+  document.getElementById('stat-pending').textContent=Math.max(0,total-done);
+}
+
 async function loadDrivers(){
   var {data:drivers,error}=await sb.from('drivers').select('*').eq('company_id',companyId).order('name');
-  if(error){logError('dashboard.html','ドライバー取得失敗',error.message);}
   var el=document.getElementById('driver-list');
   if(!drivers||drivers.length===0){
-    el.innerHTML='<div class="empty">ドライバーがまだ登録されていません</div>';
-    document.getElementById('stat-drivers').textContent='0';return;
+    el.innerHTML='<div class="empty">ドライバーがまだ登録されていません</div>';return;
   }
-  document.getElementById('stat-drivers').textContent=drivers.length;
   var rows=drivers.map(d=>`<tr>
     <td>${d.name||'-'}</td>
     <td>${d.vehicle_number||'-'}</td>
@@ -312,16 +322,6 @@ async function loadDrivers(){
   </table>`;
 }
 
-async function loadStats(){
-  var today=formatDate(new Date());
-  var {data:records}=await sb.from('tenko_records').select('id').eq('company_id',companyId).eq('date',today);
-  var done=records?records.length:0;
-  document.getElementById('stat-done').textContent=done;
-  var {data:drivers}=await sb.from('drivers').select('id').eq('company_id',companyId);
-  var driverCount=drivers?drivers.length:0;
-  document.getElementById('stat-pending').textContent=Math.max(0,driverCount*2-done);
-}
-
 function showCodeModal(){document.getElementById('code-modal').classList.add('show');}
 function openDriverModal(){document.getElementById('driver-modal').classList.add('show');}
 function closeDriverModal(){document.getElementById('driver-modal').classList.remove('show');document.getElementById('d-msg').textContent='';}
@@ -333,7 +333,7 @@ async function addDriver(){
   var msg=document.getElementById('d-msg');
   if(!name){msg.textContent='氏名を入力してください';return;}
   var {error}=await sb.from('drivers').insert({company_id:companyId,name:name,vehicle_number:vehicle,phone:phone});
-  if(error){msg.textContent='登録エラー: '+error.message;logError('dashboard.html','ドライバー登録失敗',error.message);return;}
+  if(error){msg.textContent='登録エラー: '+error.message;return;}
   closeDriverModal();
   document.getElementById('d-name').value='';
   document.getElementById('d-vehicle').value='';
