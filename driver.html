@@ -12,6 +12,7 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
 .header-name{font-size:.8rem;color:rgba(255,255,255,.8)}
 .logout-btn{background:rgba(255,255,255,.2);border:none;border-radius:6px;padding:5px 12px;font-size:.78rem;color:#fff;cursor:pointer}
 .main{max-width:480px;margin:0 auto;padding:1rem}
+
 .status-bar{background:#fff;border-radius:12px;border:1px solid #e2e8f4;padding:1rem 1.25rem;margin-bottom:1rem}
 .status-title{font-size:.78rem;font-weight:700;color:#7a8a9e;margin-bottom:.75rem}
 .status-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
@@ -22,49 +23,53 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
 .status-value{font-size:.85rem;font-weight:700}
 .status-item.done .status-value{color:#166534}
 .status-item.pending .status-value{color:#92400e}
+
 .card{background:#fff;border-radius:12px;border:1px solid #e2e8f4;padding:1.25rem;margin-bottom:1rem}
 .card-title{font-size:.82rem;font-weight:700;color:#7a8a9e;margin-bottom:1rem;text-transform:uppercase;letter-spacing:.5px}
-.editing-banner{background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem;font-size:.82rem;color:#92400e;font-weight:600}
+
 .type-btns{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
 .type-btn{padding:14px;border-radius:10px;border:2px solid #e2e8f4;background:#fafbfd;cursor:pointer;text-align:center;transition:all .15s}
 .type-btn.active{border-color:#1a5cd4;background:#e8f0fe}
 .type-btn-icon{font-size:1.4rem;margin-bottom:4px}
 .type-btn-label{font-size:.85rem;font-weight:700;color:#0f1c35}
 .type-btn-sub{font-size:.72rem;color:#7a8a9e}
+
 label{font-size:.85rem;color:#5a6a82;display:block;margin-bottom:5px}
-input[type=number],input[type=text],textarea,select{width:100%;border:1px solid #d8e2f0;border-radius:8px;padding:10px 12px;font-size:.9rem;color:#0f1c35;outline:none;background:#fff;margin-bottom:1rem}
+input[type=number],input[type=text],textarea{width:100%;border:1px solid #d8e2f0;border-radius:8px;padding:10px 12px;font-size:.9rem;color:#0f1c35;outline:none;background:#fff;margin-bottom:1rem}
 textarea{resize:vertical;min-height:70px}
+
 .alcohol-row{display:flex;gap:.75rem;align-items:flex-end;margin-bottom:1rem}
 .alcohol-row>div:first-child{flex:1}
 .alcohol-row>div:last-child{margin-bottom:1rem}
 .alcohol-row input{margin-bottom:0}
 .alc-badge{display:inline-block;padding:8px 14px;border-radius:8px;font-size:.82rem;font-weight:700}
-.alc-badge.ok{background:#dcfce7;color:#166534}
+.alc-badge.ok{background:#dcfce7;color:#166634}
 .alc-badge.ng{background:#fee2e2;color:#991b1b}
+
 .radio-group{display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap}
 .radio-btn{padding:8px 14px;border-radius:8px;border:1px solid #d8e2f0;background:#fafbfd;cursor:pointer;font-size:.82rem;font-weight:600;color:#5a6a82}
 .radio-btn.active{border-color:#1a5cd4;background:#e8f0fe;color:#1a5cd4}
 .radio-btn.ng-active{border-color:#e24b4a;background:#fee2e2;color:#e24b4a}
+
 .submit-btn{width:100%;background:#1a5cd4;color:#fff;border:none;border-radius:10px;padding:14px;font-size:1rem;font-weight:700;cursor:pointer;margin-top:.5rem}
 .submit-btn:disabled{opacity:.6}
-.cancel-btn{width:100%;background:#f0f4fa;color:#5a6a82;border:1px solid #d8e2f0;border-radius:10px;padding:12px;font-size:.9rem;font-weight:600;cursor:pointer;margin-top:.5rem}
+
 .msg{font-size:.85rem;text-align:center;margin-top:1rem;padding:.75rem;border-radius:8px}
 .msg.ok{background:#dcfce7;color:#166534}
 .msg.err{background:#fee2e2;color:#991b1b}
-.history-section{background:#fff;border-radius:12px;border:1px solid #e2e8f4;overflow:hidden;margin-bottom:1rem}
-.history-header{padding:.75rem 1.25rem;border-bottom:1px solid #f0f4fa;font-size:.85rem;font-weight:700}
-.history-item{padding:.75rem 1.25rem;border-bottom:1px solid #f8f9fc}
-.history-item:last-child{border-bottom:none}
-.history-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
-.history-type{font-size:.82rem;font-weight:700;color:#0f1c35}
-.history-detail{font-size:.72rem;color:#7a8a9e}
+
+.today-section{background:#fff;border-radius:12px;border:1px solid #e2e8f4;overflow:hidden;margin-bottom:1rem}
+.today-header{padding:.75rem 1.25rem;border-bottom:1px solid #f0f4fa;font-size:.85rem;font-weight:700}
+.today-item{padding:1rem 1.25rem;border-bottom:1px solid #f8f9fc}
+.today-item:last-child{border-bottom:none}
+.today-type{font-size:.82rem;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:.5rem}
+.today-detail{font-size:.78rem;color:#7a8a9e;line-height:1.8}
 .badge{display:inline-block;font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:20px}
 .badge.before{background:#e8f0fe;color:#1a5cd4}
 .badge.after{background:#f3e8ff;color:#7c3aed}
-.badge.modified{background:#fef3c7;color:#92400e}
-.edit-btn{background:#f0f4fa;border:1px solid #d8e2f0;border-radius:6px;padding:4px 10px;font-size:.75rem;color:#1a5cd4;cursor:pointer;font-weight:600}
-.loading{padding:2rem;text-align:center;color:#7a8a9e;font-size:.85rem}
+.badge.done{background:#dcfce7;color:#166534}
 .empty{padding:1.5rem;text-align:center;color:#7a8a9e;font-size:.82rem}
+.loading{padding:2rem;text-align:center;color:#7a8a9e;font-size:.85rem}
 </style>
 </head>
 <body>
@@ -75,7 +80,9 @@ textarea{resize:vertical;min-height:70px}
   </div>
   <button class="logout-btn" onclick="logout()">ログアウト</button>
 </div>
+
 <div class="main">
+  <!-- 今日の状況 -->
   <div class="status-bar">
     <div class="status-title">今日の点呼状況</div>
     <div class="status-grid">
@@ -90,9 +97,9 @@ textarea{resize:vertical;min-height:70px}
     </div>
   </div>
 
-  <div class="card" id="input-card">
+  <!-- 点呼入力フォーム -->
+  <div class="card">
     <div class="card-title">点呼を記録する</div>
-    <div class="editing-banner" id="editing-banner" style="display:none">✏️ 修正モード：既存の記録を上書きします</div>
 
     <div class="type-btns">
       <div class="type-btn active" id="btn-before" onclick="setType('before')">
@@ -136,32 +143,30 @@ textarea{resize:vertical;min-height:70px}
     <textarea id="notes" placeholder="特記事項があれば入力してください"></textarea>
 
     <button class="submit-btn" id="submit-btn" onclick="submitTenko()">点呼を送信する</button>
-    <button class="cancel-btn" id="cancel-btn" onclick="cancelEdit()" style="display:none">キャンセル</button>
     <div class="msg" id="msg" style="display:none"></div>
   </div>
 
-  <div class="history-section">
-    <div class="history-header">最近の点呼記録</div>
-    <div id="history-list"><div class="loading">読込中...</div></div>
+  <!-- 今日の記録 -->
+  <div class="today-section">
+    <div class="today-header">今日の点呼記録</div>
+    <div id="today-list"><div class="loading">読込中...</div></div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-var SURL='SUPABASE_URL';
-var SKEY='SUPABASE_ANON_KEY';
+var SURL='https://hyvjvcdahahrznhujtaz.supabase.co ';
+var SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh5dmp2Y2RhaGFocnpuaHVqdGF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4NTE3MDcsImV4cCI6MjA5NTQyNzcwN30.Zdl8yaFH64xEbiEzi7v8dsd2iu3CKaH96TBNqigJZV4';
 var sb=window.supabase.createClient(SURL,SKEY);
 
 var userId=null;
 var companyId=null;
 var driverId=null;
-var driverName=null;
 var tenkoType='before';
 var healthStatus='良好';
 var fatigueStatus='問題なし';
-var editingId=null;
+var todayRecords={before:null,after:null};
 
-// 日本時間の今日の日付を取得
 function getTodayJST(){
   var now=new Date();
   var jst=new Date(now.getTime()+9*60*60*1000);
@@ -175,40 +180,43 @@ async function init(){
   var {data:profile}=await sb.from('user_profiles').select('company_id,role,driver_name').eq('id',userId).single();
   if(!profile||profile.role!=='driver'){window.location.href='index.html';return;}
   companyId=profile.company_id;
-  driverName=profile.driver_name||'ドライバー';
-  document.getElementById('driver-name-header').textContent=driverName;
+  document.getElementById('driver-name-header').textContent=profile.driver_name||'ドライバー';
   var {data:driver}=await sb.from('drivers').select('id').eq('user_id',userId).single();
   if(driver) driverId=driver.id;
-  loadTodayStatus();
-  loadHistory();
+  loadToday();
 }
 
-async function loadTodayStatus(){
+async function loadToday(){
   var today=getTodayJST();
-  var {data:records}=await sb.from('tenko_records').select('tenko_type').eq('driver_id',driverId).eq('date',today);
-  var beforeDone=records&&records.some(r=>r.tenko_type==='乗務前');
-  var afterDone=records&&records.some(r=>r.tenko_type==='乗務後');
+  var {data:records}=await sb.from('tenko_records').select('*').eq('driver_id',driverId).eq('date',today).order('created_at',{ascending:false});
+
+  // 乗務前・乗務後それぞれ最新1件
+  todayRecords.before=records&&records.find(r=>r.tenko_type==='乗務前')||null;
+  todayRecords.after=records&&records.find(r=>r.tenko_type==='乗務後')||null;
+
+  // 状況バー更新
+  var beforeDone=!!todayRecords.before;
+  var afterDone=!!todayRecords.after;
   document.getElementById('before-status').textContent=beforeDone?'完了':'未完了';
   document.getElementById('after-status').textContent=afterDone?'完了':'未完了';
   document.getElementById('status-before').className='status-item'+(beforeDone?' done':' pending');
   document.getElementById('status-after').className='status-item'+(afterDone?' done':' pending');
-}
 
-async function loadHistory(){
-  var {data:records}=await sb.from('tenko_records').select('*').eq('driver_id',driverId).order('date',{ascending:false}).order('created_at',{ascending:false}).limit(10);
-  var el=document.getElementById('history-list');
-  if(!records||records.length===0){el.innerHTML='<div class="empty">記録がありません</div>';return;}
-  el.innerHTML=records.map(r=>{
+  // 今日の記録表示
+  var el=document.getElementById('today-list');
+  var items=[todayRecords.before,todayRecords.after].filter(Boolean);
+  if(items.length===0){el.innerHTML='<div class="empty">まだ記録がありません</div>';return;}
+
+  el.innerHTML=items.map(r=>{
     var typeBadge=r.tenko_type==='乗務前'?'<span class="badge before">乗務前</span>':'<span class="badge after">乗務後</span>';
-    var modBadge=r.is_modified?'<span class="badge modified">修正済</span>':'';
-    var time=r.created_at?new Date(r.created_at).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
-    return `<div class="history-item">
-      <div class="history-top">
-        <div class="history-type">${r.date} ${typeBadge} ${modBadge}</div>
-        <button class="edit-btn" onclick="editRecord('${r.id}','${r.tenko_type}',${r.alcohol_value||0},'${r.health_status||'良好'}','${r.fatigue_status||'問題なし'}',${r.meter_value||0},'${(r.notes||'').replace(/'/g,"\\'")}')">修正</button>
+    var time=r.created_at?new Date(r.created_at).toLocaleString('ja-JP',{hour:'2-digit',minute:'2-digit'}):'';
+    return `<div class="today-item">
+      <div class="today-type">${typeBadge} <span class="badge done">送信済</span></div>
+      <div class="today-detail">
+        アルコール: ${r.alcohol_value||0} mg/L　健康: ${r.health_status||'-'}　疲労: ${r.fatigue_status||'-'}<br>
+        メーター: ${r.meter_value||'-'} km　送信時刻: ${time}
+        ${r.notes?'<br>特記: '+r.notes:''}
       </div>
-      <div class="history-detail">アルコール: ${r.alcohol_value||0} mg/L　健康: ${r.health_status||'-'}　疲労: ${r.fatigue_status||'-'}</div>
-      <div class="history-detail">送信: ${time}</div>
     </div>`;
   }).join('');
 }
@@ -240,43 +248,17 @@ function setFatigue(v){
   document.getElementById(map[v]).className=v==='疲労あり'?'radio-btn ng-active':'radio-btn active';
 }
 
-function editRecord(id,type,alc,health,fatigue,meter,notes){
-  editingId=id;
-  setType(type==='乗務前'?'before':'after');
-  document.getElementById('alcohol-val').value=alc;
-  checkAlcohol();
-  setHealth(health);
-  setFatigue(fatigue);
-  document.getElementById('meter-val').value=meter||'';
-  document.getElementById('notes').value=notes||'';
-  document.getElementById('submit-btn').textContent='修正を送信する';
-  document.getElementById('cancel-btn').style.display='block';
-  document.getElementById('editing-banner').style.display='block';
-  document.getElementById('input-card').scrollIntoView({behavior:'smooth'});
-}
-
-function cancelEdit(){
-  editingId=null;
-  document.getElementById('submit-btn').textContent='点呼を送信する';
-  document.getElementById('cancel-btn').style.display='none';
-  document.getElementById('editing-banner').style.display='none';
-  document.getElementById('alcohol-val').value='';
-  document.getElementById('meter-val').value='';
-  document.getElementById('notes').value='';
-  checkAlcohol();
-  setHealth('良好');
-  setFatigue('問題なし');
-  setType('before');
-}
-
 async function submitTenko(){
   var btn=document.getElementById('submit-btn');
   var msg=document.getElementById('msg');
   btn.disabled=true;
 
   var today=getTodayJST();
+  var ttype=tenkoType==='before'?'乗務前':'乗務後';
+  var existingRecord=tenkoType==='before'?todayRecords.before:todayRecords.after;
+
   var record={
-    tenko_type:tenkoType==='before'?'乗務前':'乗務後',
+    tenko_type:ttype,
     method:'IT点呼',
     alcohol_value:parseFloat(document.getElementById('alcohol-val').value)||0,
     meter_value:parseInt(document.getElementById('meter-val').value)||null,
@@ -284,14 +266,14 @@ async function submitTenko(){
     fatigue_status:fatigueStatus,
     notes:document.getElementById('notes').value,
     status:'完了',
+    modified_at:new Date().toISOString(),
   };
 
   var error;
-  if(editingId){
+  if(existingRecord){
     // 既存レコードを上書き
     record.is_modified=true;
-    record.modified_at=new Date().toISOString();
-    var res=await sb.from('tenko_records').update(record).eq('id',editingId);
+    var res=await sb.from('tenko_records').update(record).eq('id',existingRecord.id);
     error=res.error;
   } else {
     // 新規追加
@@ -299,6 +281,7 @@ async function submitTenko(){
     record.driver_id=driverId;
     record.recorded_by=userId;
     record.date=today;
+    record.is_modified=false;
     var res2=await sb.from('tenko_records').insert(record);
     error=res2.error;
   }
@@ -309,12 +292,18 @@ async function submitTenko(){
     btn.disabled=false;return;
   }
 
-  msg.textContent=editingId?'修正しました！':'点呼を送信しました！';
+  msg.textContent=existingRecord?'送信し直しました！':'点呼を送信しました！';
   msg.className='msg ok';msg.style.display='block';
-  cancelEdit();
+
+  // フォームリセット
+  document.getElementById('alcohol-val').value='';
+  document.getElementById('meter-val').value='';
+  document.getElementById('notes').value='';
+  checkAlcohol();
+  setHealth('良好');
+  setFatigue('問題なし');
   btn.disabled=false;
-  loadTodayStatus();
-  loadHistory();
+  loadToday();
   setTimeout(()=>{msg.style.display='none';},3000);
 }
 
