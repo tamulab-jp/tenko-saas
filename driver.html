@@ -10,8 +10,16 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
 .header{background:#1a5cd4;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .header-title{font-size:1rem;font-weight:700;color:#fff}
 .header-name{font-size:.8rem;color:rgba(255,255,255,.8)}
+.header-right{display:flex;gap:.5rem}
+.setting-btn{background:rgba(255,255,255,.2);border:none;border-radius:6px;padding:5px 12px;font-size:.78rem;color:#fff;cursor:pointer}
 .logout-btn{background:rgba(255,255,255,.2);border:none;border-radius:6px;padding:5px 12px;font-size:.78rem;color:#fff;cursor:pointer}
 .main{max-width:480px;margin:0 auto;padding:1rem}
+
+/* 設定促進バナー */
+.setup-banner{background:#fee2e2;border:1px solid #fca5a5;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;text-align:center}
+.setup-banner-title{font-size:.9rem;font-weight:700;color:#991b1b;margin-bottom:.5rem}
+.setup-banner-desc{font-size:.8rem;color:#991b1b;margin-bottom:.75rem}
+.setup-banner-btn{background:#e24b4a;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:.85rem;font-weight:700;cursor:pointer}
 
 .status-bar{background:#fff;border-radius:12px;border:1px solid #e2e8f4;padding:1rem 1.25rem;margin-bottom:1rem}
 .status-title{font-size:.78rem;font-weight:700;color:#7a8a9e;margin-bottom:.75rem}
@@ -35,7 +43,7 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
 .type-btn-sub{font-size:.72rem;color:#7a8a9e}
 
 label{font-size:.85rem;color:#5a6a82;display:block;margin-bottom:5px}
-input[type=number],input[type=text],textarea{width:100%;border:1px solid #d8e2f0;border-radius:8px;padding:10px 12px;font-size:.9rem;color:#0f1c35;outline:none;background:#fff;margin-bottom:1rem}
+input[type=number],input[type=text],input[type=email],input[type=tel],textarea{width:100%;border:1px solid #d8e2f0;border-radius:8px;padding:10px 12px;font-size:.9rem;color:#0f1c35;outline:none;background:#fff;margin-bottom:1rem}
 textarea{resize:vertical;min-height:70px}
 
 .alcohol-row{display:flex;gap:.75rem;align-items:flex-end;margin-bottom:1rem}
@@ -43,7 +51,7 @@ textarea{resize:vertical;min-height:70px}
 .alcohol-row>div:last-child{margin-bottom:1rem}
 .alcohol-row input{margin-bottom:0}
 .alc-badge{display:inline-block;padding:8px 14px;border-radius:8px;font-size:.82rem;font-weight:700}
-.alc-badge.ok{background:#dcfce7;color:#166634}
+.alc-badge.ok{background:#dcfce7;color:#166534}
 .alc-badge.ng{background:#fee2e2;color:#991b1b}
 
 .radio-group{display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap}
@@ -70,6 +78,19 @@ textarea{resize:vertical;min-height:70px}
 .badge.done{background:#dcfce7;color:#166534}
 .empty{padding:1.5rem;text-align:center;color:#7a8a9e;font-size:.82rem}
 .loading{padding:2rem;text-align:center;color:#7a8a9e;font-size:.85rem}
+
+/* モーダル */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center}
+.overlay.show{display:flex}
+.modal{background:#fff;border-radius:14px;padding:1.5rem;width:90%;max-width:360px;max-height:90vh;overflow-y:auto}
+.modal h2{font-size:1rem;font-weight:700;margin-bottom:.5rem}
+.modal-desc{font-size:.8rem;color:#7a8a9e;margin-bottom:1.25rem}
+.required{color:#e24b4a;font-size:.75rem;margin-left:4px}
+.modal-btns{display:flex;gap:.75rem;margin-top:.5rem}
+.modal-btns button{flex:1;padding:10px;border-radius:8px;font-size:.88rem;font-weight:600;cursor:pointer}
+.modal-cancel{background:#f0f4fa;border:1px solid #d8e2f0;color:#5a6a82}
+.modal-submit{background:#1a5cd4;border:none;color:#fff}
+.modal-msg{font-size:.8rem;color:#e24b4a;margin-top:.5rem;text-align:center}
 </style>
 </head>
 <body>
@@ -78,10 +99,21 @@ textarea{resize:vertical;min-height:70px}
     <div class="header-title">点呼入力</div>
     <div class="header-name" id="driver-name-header">読込中...</div>
   </div>
-  <button class="logout-btn" onclick="logout()">ログアウト</button>
+  <div class="header-right">
+    <button class="setting-btn" onclick="openSetting()">⚙️ 設定</button>
+    <button class="logout-btn" onclick="logout()">ログアウト</button>
+  </div>
 </div>
 
 <div class="main">
+
+  <!-- 設定促進バナー（電話番号未設定時） -->
+  <div class="setup-banner" id="setup-banner" style="display:none">
+    <div class="setup-banner-title">⚠️ 初期設定が必要です</div>
+    <div class="setup-banner-desc">点呼を送信する前に電話番号を設定してください</div>
+    <button class="setup-banner-btn" onclick="openSetting()">今すぐ設定する</button>
+  </div>
+
   <!-- 今日の状況 -->
   <div class="status-bar">
     <div class="status-title">今日の点呼状況</div>
@@ -98,7 +130,7 @@ textarea{resize:vertical;min-height:70px}
   </div>
 
   <!-- 点呼入力フォーム -->
-  <div class="card">
+  <div class="card" id="tenko-card">
     <div class="card-title">点呼を記録する</div>
 
     <div class="type-btns">
@@ -151,6 +183,26 @@ textarea{resize:vertical;min-height:70px}
     <div class="today-header">今日の点呼記録</div>
     <div id="today-list"><div class="loading">読込中...</div></div>
   </div>
+
+</div>
+
+<!-- 設定モーダル -->
+<div class="overlay" id="setting-modal">
+  <div class="modal">
+    <h2>⚙️ ドライバー設定</h2>
+    <p class="modal-desc">情報を入力して保存してください</p>
+    <label>電話番号 <span class="required">※必須</span></label>
+    <input type="tel" id="s-phone" placeholder="例：090-1234-5678">
+    <label>車両番号</label>
+    <input type="text" id="s-vehicle" placeholder="例：横浜 100 あ 1234">
+    <label>連絡用メールアドレス</label>
+    <input type="email" id="s-email" placeholder="例：driver@example.com">
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeSetting()">キャンセル</button>
+      <button class="modal-submit" onclick="saveSetting()">保存する</button>
+    </div>
+    <div class="modal-msg" id="s-msg"></div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -162,10 +214,12 @@ var sb=window.supabase.createClient(SURL,SKEY);
 var userId=null;
 var companyId=null;
 var driverId=null;
+var driverData=null;
 var tenkoType='before';
 var healthStatus='良好';
 var fatigueStatus='問題なし';
 var todayRecords={before:null,after:null};
+var isSetupComplete=false;
 
 function getTodayJST(){
   var now=new Date();
@@ -181,8 +235,20 @@ async function init(){
   if(!profile||profile.role!=='driver'){window.location.href='index.html';return;}
   companyId=profile.company_id;
   document.getElementById('driver-name-header').textContent=profile.driver_name||'ドライバー';
-  var {data:driver}=await sb.from('drivers').select('id').eq('user_id',userId).single();
-  if(driver) driverId=driver.id;
+
+  var {data:driver}=await sb.from('drivers').select('*').eq('user_id',userId).single();
+  if(driver){
+    driverId=driver.id;
+    driverData=driver;
+    isSetupComplete=!!(driver.phone);
+  }
+
+  // 電話番号未設定の場合バナー表示・送信ブロック
+  if(!isSetupComplete){
+    document.getElementById('setup-banner').style.display='block';
+    document.getElementById('submit-btn').disabled=true;
+  }
+
   loadToday();
 }
 
@@ -190,11 +256,9 @@ async function loadToday(){
   var today=getTodayJST();
   var {data:records}=await sb.from('tenko_records').select('*').eq('driver_id',driverId).eq('date',today).order('created_at',{ascending:false});
 
-  // 乗務前・乗務後それぞれ最新1件
   todayRecords.before=records&&records.find(r=>r.tenko_type==='乗務前')||null;
   todayRecords.after=records&&records.find(r=>r.tenko_type==='乗務後')||null;
 
-  // 状況バー更新
   var beforeDone=!!todayRecords.before;
   var afterDone=!!todayRecords.after;
   document.getElementById('before-status').textContent=beforeDone?'完了':'未完了';
@@ -202,7 +266,6 @@ async function loadToday(){
   document.getElementById('status-before').className='status-item'+(beforeDone?' done':' pending');
   document.getElementById('status-after').className='status-item'+(afterDone?' done':' pending');
 
-  // 今日の記録表示
   var el=document.getElementById('today-list');
   var items=[todayRecords.before,todayRecords.after].filter(Boolean);
   if(items.length===0){el.innerHTML='<div class="empty">まだ記録がありません</div>';return;}
@@ -249,6 +312,10 @@ function setFatigue(v){
 }
 
 async function submitTenko(){
+  if(!isSetupComplete){
+    document.getElementById('setup-banner').style.display='block';
+    return;
+  }
   var btn=document.getElementById('submit-btn');
   var msg=document.getElementById('msg');
   btn.disabled=true;
@@ -271,12 +338,10 @@ async function submitTenko(){
 
   var error;
   if(existingRecord){
-    // 既存レコードを上書き
     record.is_modified=true;
     var res=await sb.from('tenko_records').update(record).eq('id',existingRecord.id);
     error=res.error;
   } else {
-    // 新規追加
     record.company_id=companyId;
     record.driver_id=driverId;
     record.recorded_by=userId;
@@ -294,17 +359,52 @@ async function submitTenko(){
 
   msg.textContent=existingRecord?'送信し直しました！':'点呼を送信しました！';
   msg.className='msg ok';msg.style.display='block';
-
-  // フォームリセット
   document.getElementById('alcohol-val').value='';
   document.getElementById('meter-val').value='';
   document.getElementById('notes').value='';
-  checkAlcohol();
-  setHealth('良好');
-  setFatigue('問題なし');
+  checkAlcohol();setHealth('良好');setFatigue('問題なし');
   btn.disabled=false;
   loadToday();
   setTimeout(()=>{msg.style.display='none';},3000);
+}
+
+function openSetting(){
+  // 既存情報をセット
+  if(driverData){
+    document.getElementById('s-phone').value=driverData.phone||'';
+    document.getElementById('s-vehicle').value=driverData.vehicle_number||'';
+    document.getElementById('s-email').value=driverData.contact_email||'';
+  }
+  document.getElementById('s-msg').textContent='';
+  document.getElementById('setting-modal').classList.add('show');
+}
+
+function closeSetting(){
+  document.getElementById('setting-modal').classList.remove('show');
+}
+
+async function saveSetting(){
+  var phone=document.getElementById('s-phone').value.trim();
+  var vehicle=document.getElementById('s-vehicle').value.trim();
+  var email=document.getElementById('s-email').value.trim();
+  var msg=document.getElementById('s-msg');
+
+  if(!phone){msg.textContent='電話番号は必須です';return;}
+
+  var {data,error}=await sb.from('drivers').update({
+    phone:phone,
+    vehicle_number:vehicle,
+    contact_email:email,
+    is_setup_complete:true,
+  }).eq('id',driverId).select().single();
+
+  if(error){msg.textContent='エラー: '+error.message;return;}
+
+  driverData=data;
+  isSetupComplete=true;
+  document.getElementById('setup-banner').style.display='none';
+  document.getElementById('submit-btn').disabled=false;
+  closeSetting();
 }
 
 async function logout(){

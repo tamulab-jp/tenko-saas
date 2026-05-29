@@ -30,7 +30,6 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
 .date-nav{display:flex;align-items:center;gap:.5rem}
 .date-btn{background:#f0f4fa;border:1px solid #d8e2f0;border-radius:6px;padding:4px 10px;font-size:.78rem;cursor:pointer}
 .date-label{font-size:.82rem;font-weight:600;color:#0f1c35}
-.add-btn{background:#1a5cd4;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:.8rem;font-weight:600;cursor:pointer}
 
 .tenko-table{width:100%;border-collapse:collapse}
 .tenko-table th{font-size:.75rem;color:#7a8a9e;font-weight:600;padding:.75rem 1rem;text-align:left;border-bottom:1px solid #f0f4fa;background:#fafbfd;white-space:nowrap}
@@ -44,9 +43,10 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
 .badge.face{background:#e8f0fe;color:#1a5cd4}
 .badge.phone{background:#f3e8ff;color:#7c3aed}
 .badge.it{background:#fef3c7;color:#92400e}
-.badge.modified{background:#fee2e2;color:#991b1b}
 
-.tenko-btn{background:#f0f4fa;border:1px solid #d8e2f0;border-radius:6px;padding:5px 10px;font-size:.75rem;color:#1a5cd4;cursor:pointer;font-weight:600}
+.tenko-btn{background:#f0f4fa;border:1px solid #d8e2f0;border-radius:6px;padding:5px 10px;font-size:.75rem;color:#1a5cd4;cursor:pointer;font-weight:600;margin-right:4px}
+.edit-btn{background:#f0f4fa;border:1px solid #d8e2f0;border-radius:6px;padding:5px 10px;font-size:.75rem;color:#5a6a82;cursor:pointer;font-weight:600;margin-right:4px}
+.del-btn{background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;padding:5px 10px;font-size:.75rem;color:#991b1b;cursor:pointer;font-weight:600}
 
 .action-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;padding:1rem}
 .action-card{border:1px solid #e2e8f4;border-radius:10px;padding:1rem;cursor:pointer;transition:all .15s}
@@ -57,19 +57,22 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
 
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center}
 .overlay.show{display:flex}
-.modal{background:#fff;border-radius:14px;padding:1.5rem;width:90%;max-width:360px}
-.modal h2{font-size:1rem;font-weight:700;margin-bottom:1.25rem}
+.modal{background:#fff;border-radius:14px;padding:1.5rem;width:90%;max-width:400px;max-height:90vh;overflow-y:auto}
+.modal h2{font-size:1rem;font-weight:700;margin-bottom:.25rem}
+.modal-sub{font-size:.8rem;color:#7a8a9e;margin-bottom:1.25rem}
 .modal label{font-size:.82rem;color:#5a6a82;display:block;margin-bottom:4px}
 .modal input{width:100%;border:1px solid #d8e2f0;border-radius:8px;padding:10px 12px;font-size:.88rem;margin-bottom:1rem;outline:none}
 .modal-btns{display:flex;gap:.75rem}
 .modal-btns button{flex:1;padding:10px;border-radius:8px;font-size:.88rem;font-weight:600;cursor:pointer}
 .modal-cancel{background:#f0f4fa;border:1px solid #d8e2f0;color:#5a6a82}
 .modal-submit{background:#1a5cd4;border:none;color:#fff}
+.modal-delete{background:#e24b4a;border:none;color:#fff}
 .modal-msg{font-size:.8rem;color:#e24b4a;margin-top:.5rem;text-align:center}
 .code-info{background:#f7f9fc;border:1px solid #e2e8f4;border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem;font-size:.82rem;color:#5a6a82}
 .code-value{font-size:1.1rem;font-weight:700;color:#1a5cd4;letter-spacing:2px;margin-top:4px}
 .loading{padding:2rem;text-align:center;color:#7a8a9e;font-size:.85rem}
 .empty{padding:2rem;text-align:center;color:#7a8a9e;font-size:.85rem}
+.driver-info-row{font-size:.75rem;color:#7a8a9e;margin-top:2px}
 </style>
 </head>
 <body>
@@ -101,6 +104,7 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
     </div>
   </div>
 
+  <!-- 点呼状況 -->
   <div class="section">
     <div class="section-header">
       <span class="section-title">点呼状況</span>
@@ -115,14 +119,15 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
     </div>
   </div>
 
+  <!-- ドライバー一覧 -->
   <div class="section">
     <div class="section-header">
       <span class="section-title">ドライバー一覧</span>
-      <button class="add-btn" onclick="openDriverModal()">＋ 追加</button>
     </div>
     <div id="driver-list"><div class="loading">読込中...</div></div>
   </div>
 
+  <!-- クイックアクション -->
   <div class="section">
     <div class="section-header"><span class="section-title">クイックアクション</span></div>
     <div class="action-grid">
@@ -136,37 +141,46 @@ body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;
         <div class="action-title">点呼記録を見る</div>
         <div class="action-desc">過去の記録・CSV出力</div>
       </div>
-      <div class="action-card" onclick="openDriverModal()">
-        <div class="action-icon">👤</div>
-        <div class="action-title">ドライバーを追加</div>
-        <div class="action-desc">新規ドライバーの登録</div>
-      </div>
       <div class="action-card" onclick="showCodeModal()">
         <div class="action-icon">🔑</div>
         <div class="action-title">会社コードを確認</div>
         <div class="action-desc">ドライバー登録用コード</div>
       </div>
+      <div class="action-card" onclick="window.location.href='tenko.html'">
+        <div class="action-icon">✏️</div>
+        <div class="action-title">ドライバー情報を編集</div>
+        <div class="action-desc">ドライバー情報の変更</div>
+      </div>
     </div>
   </div>
 </div>
 
+<!-- ドライバー編集モーダル -->
 <div class="overlay" id="driver-modal">
   <div class="modal">
-    <h2>ドライバーを追加</h2>
+    <h2 id="modal-title">ドライバー情報を編集</h2>
+    <p class="modal-sub" id="modal-driver-name"></p>
+    <input type="hidden" id="edit-driver-id">
     <label>氏名</label>
     <input type="text" id="d-name" placeholder="例：田村 守">
-    <label>車両番号</label>
-    <input type="text" id="d-vehicle" placeholder="例：横浜 100 あ 1234">
     <label>電話番号</label>
     <input type="tel" id="d-phone" placeholder="例：090-1234-5678">
+    <label>車両番号</label>
+    <input type="text" id="d-vehicle" placeholder="例：横浜 100 あ 1234">
+    <label>連絡用メールアドレス</label>
+    <input type="email" id="d-email" placeholder="例：driver@example.com">
     <div class="modal-btns">
       <button class="modal-cancel" onclick="closeDriverModal()">キャンセル</button>
-      <button class="modal-submit" onclick="addDriver()">追加する</button>
+      <button class="modal-submit" onclick="saveDriver()">保存する</button>
+    </div>
+    <div style="margin-top:.75rem">
+      <button class="modal-delete" style="width:100%;padding:10px;border-radius:8px;font-size:.88rem;font-weight:600;cursor:pointer" onclick="deleteDriver()">このドライバーを削除する</button>
     </div>
     <div class="modal-msg" id="d-msg"></div>
   </div>
 </div>
 
+<!-- 会社コードモーダル -->
 <div class="overlay" id="code-modal">
   <div class="modal">
     <h2>🔑 会社コード</h2>
@@ -195,12 +209,10 @@ function getTodayJST(){
   var jst=new Date(now.getTime()+9*60*60*1000);
   return jst.toISOString().split('T')[0];
 }
-
 function formatDate(d){
   var jst=new Date(d.getTime()+9*60*60*1000);
   return jst.toISOString().split('T')[0];
 }
-
 function formatDateJa(d){
   var jst=new Date(d.getTime()+9*60*60*1000);
   return jst.getFullYear()+'/'+(jst.getMonth()+1).toString().padStart(2,'0')+'/'+jst.getDate().toString().padStart(2,'0');
@@ -235,30 +247,24 @@ function changeDate(d){
 async function loadTenkoStatus(){
   var dateStr=formatDate(currentDate);
   var {data:drivers}=await sb.from('drivers').select('id,name,vehicle_number').eq('company_id',companyId).order('name');
-  // created_atの降順で取得→同じ区分・ドライバーの最新レコードをfindで取得
   var {data:records}=await sb.from('tenko_records').select('*').eq('company_id',companyId).eq('date',dateStr).order('created_at',{ascending:false});
   var el=document.getElementById('tenko-status-list');
   if(!drivers||drivers.length===0){el.innerHTML='<div class="empty">ドライバーが登録されていません</div>';return;}
 
   var rows=drivers.map(d=>{
-    // 最新のレコードを取得（created_at降順なのでfindで最初に見つかったものが最新）
     var before=records&&records.find(r=>r.driver_id===d.id&&r.tenko_type==='乗務前');
     var after=records&&records.find(r=>r.driver_id===d.id&&r.tenko_type==='乗務後');
-
     function methodBadge(r){
       if(!r) return '<span class="badge none">未実施</span>';
       var m=r.method||'IT点呼';
       var cls=m==='対面'?'face':m==='電話'?'phone':'it';
-      var mod=r.is_modified?'<span class="badge modified">修正済</span>':'';
-      return `<span class="badge ${cls}">${m}</span>${mod}`;
+      return `<span class="badge ${cls}">${m}</span>`;
     }
-
     function alcDisplay(r){
       if(!r) return '-';
       var v=parseFloat(r.alcohol_value)||0;
       return v>=0.15?`<span style="color:#e24b4a;font-weight:700">${v.toFixed(2)}</span>`:v.toFixed(2);
     }
-
     return `<tr>
       <td><strong>${d.name}</strong></td>
       <td>${d.vehicle_number||'-'}</td>
@@ -288,36 +294,25 @@ async function loadStats(){
   var {data:drivers}=await sb.from('drivers').select('id').eq('company_id',companyId);
   var driverCount=drivers?drivers.length:0;
   document.getElementById('stat-drivers').textContent=driverCount;
-
-  // 各ドライバーの乗務前・乗務後それぞれ1回としてカウント
   var {data:records}=await sb.from('tenko_records').select('driver_id,tenko_type').eq('company_id',companyId).eq('date',today);
-
-  // ユニークな（driver_id + tenko_type）の組み合わせをカウント
   var unique=new Set();
-  if(records){
-    records.forEach(r=>unique.add(r.driver_id+'_'+r.tenko_type));
-  }
+  if(records) records.forEach(r=>unique.add(r.driver_id+'_'+r.tenko_type));
   var done=unique.size;
-  var total=driverCount*2;
   document.getElementById('stat-done').textContent=done;
-  document.getElementById('stat-pending').textContent=Math.max(0,total-done);
+  document.getElementById('stat-pending').textContent=Math.max(0,driverCount*2-done);
 }
 
 async function loadDrivers(){
-  var {data:drivers,error}=await sb.from('drivers').select('*').eq('company_id',companyId).order('name');
+  var {data:drivers}=await sb.from('drivers').select('*').eq('company_id',companyId).order('name');
   var el=document.getElementById('driver-list');
-  if(!drivers||drivers.length===0){
-    el.innerHTML='<div class="empty">ドライバーがまだ登録されていません</div>';return;
-  }
+  if(!drivers||drivers.length===0){el.innerHTML='<div class="empty">ドライバーがまだ登録されていません</div>';return;}
 
-  // 今日の点呼記録を取得
   var today=getTodayJST();
   var {data:records}=await sb.from('tenko_records').select('driver_id,tenko_type').eq('company_id',companyId).eq('date',today);
 
   var rows=drivers.map(d=>{
     var hasBefore=records&&records.some(r=>r.driver_id===d.id&&r.tenko_type==='乗務前');
     var hasAfter=records&&records.some(r=>r.driver_id===d.id&&r.tenko_type==='乗務後');
-
     var statusBadge;
     if(hasAfter){
       statusBadge='<span class="badge" style="background:#f3f4f6;color:#6b7280">業務終了</span>';
@@ -326,43 +321,71 @@ async function loadDrivers(){
     } else {
       statusBadge='<span class="badge" style="background:#fef3c7;color:#92400e">待機中</span>';
     }
-
+    var setupAlert=!d.phone?'<span style="color:#e24b4a;font-size:.72rem">⚠️ 電話番号未設定</span>':'';
     return `<tr>
-      <td>${d.name||'-'}</td>
-      <td>${d.vehicle_number||'-'}</td>
-      <td>${d.phone||'-'}</td>
+      <td>
+        <div>${d.name||'-'}</div>
+        <div class="driver-info-row">${d.phone||'電話番号未設定'} ${setupAlert}</div>
+        <div class="driver-info-row">${d.vehicle_number||'車両番号未設定'}</div>
+        <div class="driver-info-row">${d.contact_email||''}</div>
+      </td>
       <td>${statusBadge}</td>
-      <td><button class="tenko-btn" onclick="window.location.href='tenko.html?driver=${d.id}'">点呼入力</button></td>
+      <td>
+        <button class="edit-btn" onclick="openDriverModal('${d.id}','${d.name||''}','${d.phone||''}','${d.vehicle_number||''}','${d.contact_email||''}')">編集</button>
+      </td>
     </tr>`;
   }).join('');
 
   el.innerHTML=`<table class="tenko-table">
-    <thead><tr><th>氏名</th><th>車両番号</th><th>電話番号</th><th>状態</th><th>操作</th></tr></thead>
+    <thead><tr><th>ドライバー情報</th><th>状態</th><th>操作</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
 }
 
-function showCodeModal(){document.getElementById('code-modal').classList.add('show');}
-function openDriverModal(){document.getElementById('driver-modal').classList.add('show');}
-function closeDriverModal(){document.getElementById('driver-modal').classList.remove('show');document.getElementById('d-msg').textContent='';}
+function openDriverModal(id,name,phone,vehicle,email){
+  document.getElementById('edit-driver-id').value=id;
+  document.getElementById('modal-driver-name').textContent=name+'の情報を編集';
+  document.getElementById('d-name').value=name;
+  document.getElementById('d-phone').value=phone;
+  document.getElementById('d-vehicle').value=vehicle;
+  document.getElementById('d-email').value=email;
+  document.getElementById('d-msg').textContent='';
+  document.getElementById('driver-modal').classList.add('show');
+}
 
-async function addDriver(){
+function closeDriverModal(){
+  document.getElementById('driver-modal').classList.remove('show');
+}
+
+async function saveDriver(){
+  var id=document.getElementById('edit-driver-id').value;
   var name=document.getElementById('d-name').value.trim();
-  var vehicle=document.getElementById('d-vehicle').value.trim();
   var phone=document.getElementById('d-phone').value.trim();
+  var vehicle=document.getElementById('d-vehicle').value.trim();
+  var email=document.getElementById('d-email').value.trim();
   var msg=document.getElementById('d-msg');
   if(!name){msg.textContent='氏名を入力してください';return;}
-  var {error}=await sb.from('drivers').insert({company_id:companyId,name:name,vehicle_number:vehicle,phone:phone});
-  if(error){msg.textContent='登録エラー: '+error.message;return;}
+  var {error}=await sb.from('drivers').update({name:name,phone:phone,vehicle_number:vehicle,contact_email:email}).eq('id',id);
+  if(error){msg.textContent='エラー: '+error.message;return;}
   closeDriverModal();
-  document.getElementById('d-name').value='';
-  document.getElementById('d-vehicle').value='';
-  document.getElementById('d-phone').value='';
   loadDrivers();
   loadStats();
   loadTenkoStatus();
 }
 
+async function deleteDriver(){
+  var id=document.getElementById('edit-driver-id').value;
+  var name=document.getElementById('d-name').value;
+  if(!confirm(name+'を削除しますか？この操作は元に戻せません。')){return;}
+  var {error}=await sb.from('drivers').delete().eq('id',id);
+  if(error){document.getElementById('d-msg').textContent='エラー: '+error.message;return;}
+  closeDriverModal();
+  loadDrivers();
+  loadStats();
+  loadTenkoStatus();
+}
+
+function showCodeModal(){document.getElementById('code-modal').classList.add('show');}
 async function logout(){await sb.auth.signOut();window.location.href='index.html';}
 init();
 </script>
