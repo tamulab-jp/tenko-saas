@@ -124,7 +124,7 @@ document.getElementById('btn').addEventListener('click',async function(){
       if(!code){msg.className='msg err';msg.textContent='会社コードを入力してください';btn.disabled=false;return;}
       if(!dname){msg.className='msg err';msg.textContent='氏名を入力してください';btn.disabled=false;return;}
       // 会社コードで会社を検索
-      var {data:company,error:ce}=await sb.from('companies').select('id').eq('company_code',code).single();
+      var {data:company,error:ce}=await sb.from('companies').select('id').eq('company_code',code).maybeSingle();
       if(ce||!company){msg.className='msg err';msg.textContent='会社コードが正しくありません';btn.disabled=false;return;}
       var r2=await sb.auth.signUp({email:em,password:pw});
       if(r2.error){msg.className='msg err';msg.textContent=r2.error.message;btn.disabled=false;return;}
