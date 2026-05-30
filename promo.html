@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>点呼管理システム</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Noto Sans JP',sans-serif;background:#0a1628;color:#fff;overflow-x:hidden}
+
+/* アニメーション基本 */
+.reveal{opacity:0;transform:translateY(40px);transition:opacity .7s ease,transform .7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-left{opacity:0;transform:translateX(-40px);transition:opacity .7s ease,transform .7s ease}
+.reveal-left.visible{opacity:1;transform:translateX(0)}
+.reveal-right{opacity:0;transform:translateX(40px);transition:opacity .7s ease,transform .7s ease}
+.reveal-right.visible{opacity:1;transform:translateX(0)}
+
+/* ヒーロー */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4rem 2rem;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(26,92,212,.25) 0%,transparent 70%)}
+.hero-tag{display:inline-block;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);font-size:.75rem;font-weight:700;padding:6px 18px;border-radius:20px;margin-bottom:1.5rem;letter-spacing:2px}
+.hero h1{font-size:clamp(2rem,6vw,4rem);font-weight:900;line-height:1.15;margin-bottom:1.5rem}
+.hero h1 em{font-style:normal;color:#3b7ef8}
+.hero-sub{font-size:clamp(.9rem,2vw,1.1rem);color:rgba(255,255,255,.6);max-width:500px;margin:0 auto 2.5rem;line-height:1.8}
+.hero-btn{display:inline-block;background:#1a5cd4;color:#fff;padding:14px 36px;border-radius:8px;font-weight:700;font-size:1rem;text-decoration:none;transition:transform .2s,background .2s}
+.hero-btn:hover{background:#3b7ef8;transform:translateY(-2px)}
+.hero-dot-track{width:100%;height:3px;background:rgba(255,255,255,.1);border-radius:2px;position:relative;overflow:hidden}
+.hero-dot{position:absolute;left:-8px;top:-3px;width:8px;height:8px;border-radius:50%;background:#378ADD;animation:heroSlide 1.5s linear infinite}
+@keyframes heroSlide{0%{left:-8px;opacity:1}80%{opacity:1}100%{left:100%;opacity:0}}
+
+/* 数字 */
+.numbers{padding:4rem 2rem;background:rgba(255,255,255,.03);border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07)}
+.numbers-inner{max-width:800px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;text-align:center}
+.num-value{font-size:clamp(2rem,5vw,3.5rem);font-weight:900;color:#3b7ef8;line-height:1;margin-bottom:.5rem}
+.num-label{font-size:.82rem;color:rgba(255,255,255,.5);line-height:1.5}
+
+/* 課題→解決 */
+.problem{padding:5rem 2rem}
+.problem-inner{max-width:900px;margin:0 auto}
+.section-tag{font-size:.72rem;font-weight:700;color:#3b7ef8;letter-spacing:3px;text-transform:uppercase;margin-bottom:.75rem}
+.section-title{font-size:clamp(1.5rem,4vw,2.4rem);font-weight:900;margin-bottom:1rem;line-height:1.3}
+.section-sub{font-size:.9rem;color:rgba(255,255,255,.5);margin-bottom:3rem}
+
+.problem-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.25rem}
+.problem-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:1.5rem;transition:transform .3s,border-color .3s}
+.problem-card:hover{transform:translateY(-4px);border-color:rgba(226,75,74,.3)}
+.problem-icon{font-size:2rem;margin-bottom:1rem}
+.problem-title{font-weight:700;font-size:.95rem;margin-bottom:.5rem}
+.problem-desc{font-size:.82rem;color:rgba(255,255,255,.5);line-height:1.7}
+
+/* 矢印 */
+.arrow-section{text-align:center;padding:2rem;font-size:2rem;color:#3b7ef8;animation:bounce 1.5s infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(8px)}}
+
+/* 解決策 */
+.solution{padding:5rem 2rem;background:rgba(26,92,212,.05)}
+.solution-inner{max-width:900px;margin:0 auto}
+.solution-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.25rem}
+.solution-card{background:rgba(59,126,248,.08);border:1px solid rgba(59,126,248,.2);border-radius:14px;padding:1.5rem;transition:transform .3s,border-color .3s}
+.solution-card:hover{transform:translateY(-4px);border-color:rgba(59,126,248,.5)}
+.solution-icon{font-size:2rem;margin-bottom:1rem}
+.solution-title{font-weight:700;font-size:.95rem;margin-bottom:.5rem;color:#7eb8ff}
+.solution-desc{font-size:.82rem;color:rgba(255,255,255,.55);line-height:1.7}
+
+/* 画面遷移 */
+.flow{padding:5rem 2rem}
+.flow-inner{max-width:900px;margin:0 auto}
+.flow-tabs{display:flex;gap:.75rem;margin-bottom:2.5rem;flex-wrap:wrap}
+.flow-tab{padding:8px 20px;border-radius:8px;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s;background:transparent}
+.flow-tab.active{background:#1a5cd4;border-color:#1a5cd4;color:#fff}
+.flow-content{display:none}
+.flow-content.active{display:flex;flex-direction:column;gap:1rem}
+.flow-step{display:flex;gap:1.25rem;align-items:flex-start;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1.25rem;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.step-num{width:36px;height:36px;background:#1a5cd4;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.85rem;flex-shrink:0}
+.step-title{font-weight:700;font-size:.95rem;margin-bottom:.3rem}
+.step-desc{font-size:.82rem;color:rgba(255,255,255,.55);line-height:1.6}
+.step-badge{display:inline-block;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.25);color:#f59e0b;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:4px;margin-top:.5rem}
+
+/* 機能 */
+.features{padding:5rem 2rem;background:rgba(255,255,255,.02)}
+.features-inner{max-width:900px;margin:0 auto}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-top:2.5rem}
+.feature-card{border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1.25rem;text-align:center;background:rgba(255,255,255,.03);transition:transform .3s,border-color .3s}
+.feature-card:hover{transform:translateY(-3px);border-color:rgba(59,126,248,.3)}
+.feature-icon{font-size:1.8rem;margin-bottom:.75rem}
+.feature-title{font-weight:700;font-size:.85rem;margin-bottom:.4rem}
+.feature-desc{font-size:.75rem;color:rgba(255,255,255,.45);line-height:1.5}
+
+/* CTA */
+.cta{padding:6rem 2rem;text-align:center;position:relative;overflow:hidden}
+.cta-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 50% 50%,rgba(26,92,212,.3) 0%,transparent 70%)}
+.cta-inner{position:relative;z-index:1}
+.cta h2{font-size:clamp(1.5rem,4vw,2.5rem);font-weight:900;margin-bottom:1rem}
+.cta p{color:rgba(255,255,255,.6);margin-bottom:2.5rem;font-size:.95rem}
+.cta-url{display:inline-block;background:#1a5cd4;color:#fff;padding:16px 40px;border-radius:10px;font-weight:900;font-size:1.05rem;text-decoration:none;letter-spacing:.5px;transition:transform .2s,background .2s}
+.cta-url:hover{background:#3b7ef8;transform:translateY(-3px)}
+.cta-note{font-size:.78rem;color:rgba(255,255,255,.3);margin-top:1rem}
+
+/* フッター */
+footer{padding:2rem;text-align:center;color:rgba(255,255,255,.25);font-size:.78rem;border-top:1px solid rgba(255,255,255,.07)}
+
+@media(max-width:600px){
+  .numbers-inner{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ヒーロー -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="reveal">
+    <div class="hero-tag">軽貨物運送会社向け</div>
+    <h1>点呼管理を<br><em>スマホ1台</em>で完結</h1>
+    <p class="hero-sub">毎日の手書き記録はもう不要。</p>
+
+    <!-- 案①：データが飛ぶアニメーション -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:1.5rem;margin:2rem auto;max-width:400px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:.5rem">
+        <div style="width:56px;height:96px;border:2px solid rgba(255,255,255,.3);border-radius:12px;background:rgba(255,255,255,.05);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:8px">
+          <div style="width:100%;height:4px;background:#378ADD;border-radius:2px"></div>
+          <div style="width:70%;height:4px;background:rgba(255,255,255,.2);border-radius:2px"></div>
+          <div style="width:100%;height:4px;background:#378ADD;border-radius:2px"></div>
+          <div style="width:70%;height:4px;background:rgba(255,255,255,.2);border-radius:2px"></div>
+        </div>
+        <span style="font-size:.72rem;color:rgba(255,255,255,.5)">ドライバー</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1">
+        <div class="hero-dot-track"><div class="hero-dot"></div></div>
+        <div class="hero-dot-track"><div class="hero-dot" style="animation-delay:.6s"></div></div>
+        <span style="font-size:.7rem;color:#7eb8ff;font-weight:700">即時反映</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:.5rem">
+        <div style="width:90px;height:66px;border:2px solid rgba(255,255,255,.3);border-radius:8px;background:rgba(255,255,255,.05);padding:7px;display:flex;flex-direction:column;gap:4px">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px">
+            <div style="height:7px;border-radius:2px;background:#378ADD"></div>
+            <div style="height:7px;border-radius:2px;background:rgba(255,255,255,.15)"></div>
+            <div style="height:7px;border-radius:2px;background:#378ADD"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px">
+            <div style="height:7px;border-radius:2px;background:rgba(255,255,255,.15)"></div>
+            <div style="height:7px;border-radius:2px;background:#1d9e75"></div>
+            <div style="height:7px;border-radius:2px;background:rgba(255,255,255,.15)"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px">
+            <div style="height:7px;border-radius:2px;background:#378ADD"></div>
+            <div style="height:7px;border-radius:2px;background:#378ADD"></div>
+            <div style="height:7px;border-radius:2px;background:rgba(255,255,255,.15)"></div>
+          </div>
+        </div>
+        <div style="width:28px;height:4px;background:rgba(255,255,255,.3);border-radius:2px"></div>
+        <span style="font-size:.72rem;color:rgba(255,255,255,.5)">管理者</span>
+      </div>
+    </div>
+
+    <!-- 案②：2画面並列モック -->
+    <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:.75rem;max-width:480px;margin:0 auto 2.5rem;align-items:center">
+      <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:.875rem;font-size:.72rem;text-align:left">
+        <div style="color:rgba(255,255,255,.5);margin-bottom:.5rem;font-weight:700">📱 ドライバー画面</div>
+        <div style="background:rgba(255,255,255,.06);border-radius:4px;padding:4px 6px;margin-bottom:3px;color:rgba(255,255,255,.6)">アルコール <span style="color:#7eb8ff;font-weight:700">0.00</span></div>
+        <div style="background:rgba(255,255,255,.06);border-radius:4px;padding:4px 6px;margin-bottom:3px;color:rgba(255,255,255,.6)">健康状態 <span style="color:#7eb8ff;font-weight:700">良好</span></div>
+        <div style="background:rgba(255,255,255,.06);border-radius:4px;padding:4px 6px;margin-bottom:.5rem;color:rgba(255,255,255,.6)">メーター <span style="color:#7eb8ff;font-weight:700">12,345</span></div>
+        <div style="background:#1a5cd4;color:#fff;border-radius:4px;padding:4px 8px;text-align:center;font-weight:700;font-size:.7rem">点呼を送信する</div>
+      </div>
+      <div style="font-size:1.4rem;color:#378ADD">→</div>
+      <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:.875rem;font-size:.72rem;text-align:left">
+        <div style="color:rgba(255,255,255,.5);margin-bottom:.5rem;font-weight:700">🖥️ 管理者画面</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.8)">田村 守<span style="background:#0F6E56;color:#9FE1CB;padding:2px 6px;border-radius:10px;font-size:.65rem">稼働中</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.8)">青木 次郎<span style="background:#0F6E56;color:#9FE1CB;padding:2px 6px;border-radius:10px;font-size:.65rem">稼働中</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;color:rgba(255,255,255,.8)">山田 花子<span style="background:#854F0B;color:#FAC775;padding:2px 6px;border-radius:10px;font-size:.65rem">待機中</span></div>
+      </div>
+    </div>
+
+    <a href="https://tamulab-jp.github.io/tenko-saas/" class="hero-btn" target="_blank">無料で試してみる →</a>
+  </div>
+</section>
+
+<!-- 数字 -->
+<section class="numbers">
+  <div class="numbers-inner">
+    <div class="reveal">
+      <div class="num-value" data-target="3">0</div>
+      <div class="num-label">点呼方法に対応<br>（対面・電話・IT点呼）</div>
+    </div>
+    <div class="reveal">
+      <div class="num-value" data-target="0">0</div>
+      <div class="num-label">アプリインストール不要<br>ブラウザだけで使える</div>
+    </div>
+    <div class="reveal">
+      <div class="num-value" data-target="1">0</div>
+      <div class="num-label">日で運用開始<br>最短即日スタート</div>
+    </div>
+  </div>
+</section>
+
+<!-- 課題 -->
+<section class="problem">
+  <div class="problem-inner">
+    <div class="section-tag reveal">こんなお悩みありませんか？</div>
+    <div class="section-title reveal">点呼管理の「あるある」問題</div>
+    <div class="section-sub reveal">毎日繰り返す手間を一気に解消します</div>
+    <div class="problem-grid">
+      <div class="problem-card reveal">
+        <div class="problem-icon">📋</div>
+        <div class="problem-title">紙の記録が面倒</div>
+        <div class="problem-desc">毎日手書きで記録・保管。どこに保存したかわからなくなることも。</div>
+      </div>
+      <div class="problem-card reveal">
+        <div class="problem-icon">📞</div>
+        <div class="problem-title">電話点呼の記録漏れ</div>
+        <div class="problem-desc">電話で確認したのに記録し忘れ。後から誰に点呼したかわからない。</div>
+      </div>
+      <div class="problem-card reveal">
+        <div class="problem-icon">🔍</div>
+        <div class="problem-title">全員の状況が把握できない</div>
+        <div class="problem-desc">今日誰が完了して誰が未完了か、すぐに確認できない。</div>
+      </div>
+      <div class="problem-card reveal">
+        <div class="problem-icon">📂</div>
+        <div class="problem-title">記録の検索・集計が大変</div>
+        <div class="problem-desc">過去の記録を探すのに時間がかかる。Excelにまとめるのが手間。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 矢印 -->
+<div class="arrow-section reveal">↓</div>
+
+<!-- 解決策 -->
+<section class="solution">
+  <div class="solution-inner">
+    <div class="section-tag reveal">このシステムで解決</div>
+    <div class="section-title reveal">点呼管理のすべてをひとつに</div>
+    <div class="section-sub reveal">導入するだけで毎日の手間がゼロに近づく</div>
+    <div class="solution-grid">
+      <div class="solution-card reveal">
+        <div class="solution-icon">📱</div>
+        <div class="solution-title">スマホで点呼入力</div>
+        <div class="solution-desc">ドライバーが自分のスマホから送信。アルコール値・健康状態・メーターを入力するだけ。</div>
+      </div>
+      <div class="solution-card reveal">
+        <div class="solution-icon">🖥️</div>
+        <div class="solution-title">管理者が一覧で確認</div>
+        <div class="solution-desc">全ドライバーの点呼状況をダッシュボードで一目確認。未完了者がすぐにわかる。</div>
+      </div>
+      <div class="solution-card reveal">
+        <div class="solution-icon">⚡</div>
+        <div class="solution-title">3種の点呼方法に対応</div>
+        <div class="solution-desc">対面・電話・IT点呼すべてに対応。管理者が代わりに入力することも可能。</div>
+      </div>
+      <div class="solution-card reveal">
+        <div class="solution-icon">📊</div>
+        <div class="solution-title">CSV出力で書類作成</div>
+        <div class="solution-desc">過去の記録をCSVでダウンロード。Excelで開いてそのまま使える。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 使い方 -->
+<section class="flow">
+  <div class="flow-inner">
+    <div class="section-tag reveal">使い方</div>
+    <div class="section-title reveal">誰でも迷わず使える</div>
+    <div class="section-sub reveal" style="margin-bottom:2rem">タブを切り替えて操作手順を確認してください</div>
+    <div class="flow-tabs reveal">
+      <div class="flow-tab active" onclick="showTab('admin',this)">🏢 管理者</div>
+      <div class="flow-tab" onclick="showTab('driver',this)">🚗 ドライバー</div>
+      <div class="flow-tab" onclick="showTab('setup',this)">🚀 導入手順</div>
+    </div>
+    <div class="flow-content active" id="tab-admin">
+      <div class="flow-step"><div class="step-num">1</div><div><div class="step-title">ブラウザでログイン</div><div class="step-desc">PCまたはスマホのブラウザでシステムを開き、メール・パスワードでログインします。</div></div></div>
+      <div class="flow-step"><div class="step-num">2</div><div><div class="step-title">ダッシュボードで全員の状況を確認</div><div class="step-desc">全ドライバーの点呼状況（待機中・稼働中・業務終了）が一目でわかります。日付を切り替えて前日の確認もできます。</div></div></div>
+      <div class="flow-step"><div class="step-num">3</div><div><div class="step-title">対面・電話点呼を記録する</div><div class="step-desc">「点呼を記録する」から点呼方法を選んで入力します。ドライバーの「点呼入力」ボタンから特定ドライバーの点呼記録もできます。</div><div class="step-badge">IT点呼はドライバーが自分で入力</div></div></div>
+      <div class="flow-step"><div class="step-num">4</div><div><div class="step-title">過去の記録をCSV出力</div><div class="step-desc">「点呼記録を見る」から期間・ドライバーで絞り込んで記録を確認。「CSV出力」ボタンでExcel形式をダウンロードできます。</div></div></div>
+    </div>
+    <div class="flow-content" id="tab-driver">
+      <div class="flow-step"><div class="step-num">1</div><div><div class="step-title">スマホで新規登録（初回のみ）</div><div class="step-desc">ブラウザでシステムを開き「ドライバー」を選択。管理者から受け取った会社コードと氏名・メール・パスワードを入力して登録します。</div></div></div>
+      <div class="flow-step"><div class="step-num">2</div><div><div class="step-title">初期設定（初回のみ）</div><div class="step-desc">ログイン後、右上の「⚙️ 設定」から電話番号・車両番号などを設定します。</div><div class="step-badge">電話番号の設定は必須</div></div></div>
+      <div class="flow-step"><div class="step-num">3</div><div><div class="step-title">乗務前点呼を送信</div><div class="step-desc">出発前に「乗務前」を選択してアルコール値・健康状態・メーターを入力して送信します。</div></div></div>
+      <div class="flow-step"><div class="step-num">4</div><div><div class="step-title">乗務後点呼を送信</div><div class="step-desc">帰着後に「乗務後」を選択して同様に送信します。入力ミスは送り直すだけで上書きされます。</div></div></div>
+    </div>
+    <div class="flow-content" id="tab-setup">
+      <div class="flow-step"><div class="step-num">1</div><div><div class="step-title">管理者アカウントを作成</div><div class="step-desc">「管理者」を選択して会社名・メール・パスワードを入力して登録します。</div></div></div>
+      <div class="flow-step"><div class="step-num">2</div><div><div class="step-title">会社コードをドライバーに伝える</div><div class="step-desc">ダッシュボードの「🔑 コード確認」から会社コードを確認してドライバーにLINE等で共有します。</div></div></div>
+      <div class="flow-step"><div class="step-num">3</div><div><div class="step-title">ドライバーが各自登録</div><div class="step-desc">ドライバーがスマホで新規登録します。会社コードを入力することで自動的に会社に紐付けられます。</div></div></div>
+      <div class="flow-step"><div class="step-num">4</div><div><div class="step-title">翌朝から運用開始</div><div class="step-desc">ドライバーが点呼を送信するだけで運用開始できます。</div><div class="step-badge">最短即日運用開始</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 機能一覧 -->
+<section class="features">
+  <div class="features-inner">
+    <div class="section-tag reveal">機能</div>
+    <div class="section-title reveal">主な機能</div>
+    <div class="feature-grid">
+      <div class="feature-card reveal"><div class="feature-icon">📱</div><div class="feature-title">スマホ対応</div><div class="feature-desc">iOS・Android両対応。アプリ不要。</div></div>
+      <div class="feature-card reveal"><div class="feature-icon">🔒</div><div class="feature-title">会社ごとに分離</div><div class="feature-desc">他の会社のデータは一切見えません。</div></div>
+      <div class="feature-card reveal"><div class="feature-icon">📊</div><div class="feature-title">CSV出力</div><div class="feature-desc">Excel形式でダウンロード可能。</div></div>
+      <div class="feature-card reveal"><div class="feature-icon">📅</div><div class="feature-title">日付別確認</div><div class="feature-desc">前日・当日を切り替えて確認。</div></div>
+      <div class="feature-card reveal"><div class="feature-icon">🚨</div><div class="feature-title">アルコール警告</div><div class="feature-desc">0.15以上で要確認を自動表示。</div></div>
+      <div class="feature-card reveal"><div class="feature-icon">🏠</div><div class="feature-title">ホーム画面追加</div><div class="feature-desc">アプリのように起動できます。</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="cta-bg"></div>
+  <div class="cta-inner reveal">
+    <h2>まずは無料でお試しください</h2>
+    <p>アカウント登録から最短即日で運用開始できます</p>
+    <a href="https://tamulab-jp.github.io/tenko-saas/" class="cta-url" target="_blank">システムを開く →</a>
+    <p class="cta-note">クレジットカード不要・登録無料</p>
+  </div>
+</section>
+
+<footer>
+  <p>点呼管理システム © 2026 JLS合同会社</p>
+</footer>
+
+<script>
+// スクロールアニメーション
+const observer=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}
+  });
+},{threshold:.1});
+document.querySelectorAll('.reveal,.reveal-left,.reveal-right').forEach(el=>observer.observe(el));
+
+// 数字カウントアップ
+const numObserver=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const el=e.target;
+      const target=parseInt(el.dataset.target);
+      let current=0;
+      const step=Math.ceil(target/30);
+      const timer=setInterval(()=>{
+        current+=step;
+        if(current>=target){current=target;clearInterval(timer)}
+        el.textContent=current;
+      },50);
+      numObserver.unobserve(el);
+    }
+  });
+},{threshold:.5});
+document.querySelectorAll('.num-value[data-target]').forEach(el=>numObserver.observe(el));
+
+// タブ切り替え
+function showTab(name,btn){
+  document.querySelectorAll('.flow-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.flow-content').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+}
+</script>
+</body>
+</html>
