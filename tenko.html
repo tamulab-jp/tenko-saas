@@ -144,7 +144,7 @@ var drivers=[];
 
 async function logError(page,message,detail){
   try{
-    await sb.from('error_logs').insert({
+    await sb.from('tk_error_logs').insert({
       company_id:companyId,user_id:userId||null,
       page:page,error_message:message,error_detail:detail||''
     });
@@ -155,7 +155,7 @@ async function init(){
   var {data:{session}}=await sb.auth.getSession();
   if(!session){window.location.href='index.html';return;}
   userId=session.user.id;
-  var {data:profile,error:pe}=await sb.from('user_profiles').select('company_id').eq('id',userId).single();
+  var {data:profile,error:pe}=await sb.from('tk_user_profiles').select('company_id').eq('id',userId).single();
   if(pe||!profile){logError('tenko.html','プロフィール取得失敗',pe?.message);window.location.href='index.html';return;}
   companyId=profile.company_id;
   await loadDrivers();
@@ -169,7 +169,7 @@ async function init(){
 }
 
 async function loadDrivers(){
-  var {data,error}=await sb.from('drivers').select('*').eq('company_id',companyId).order('name');
+  var {data,error}=await sb.from('tk_drivers').select('*').eq('company_id',companyId).order('name');
   if(error){logError('tenko.html','ドライバー取得失敗',error.message);}
   drivers=data||[];
   var sel=document.getElementById('driver-select');
@@ -235,7 +235,7 @@ async function submitTenko(){
     health_status:healthStatus,fatigue_status:fatigueStatus,
     notes:document.getElementById('notes').value,
   };
-  var {error}=await sb.from('tenko_records').insert(record);
+  var {error}=await sb.from('tk_tenko_records').insert(record);
   if(error){
     showMsg('エラー: '+error.message,'err');
     logError('tenko.html','点呼記録失敗',error.message);

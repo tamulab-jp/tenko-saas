@@ -118,7 +118,7 @@ var currentPage=1;
 
 async function logError(page,message,detail){
   try{
-    await sb.from('error_logs').insert({
+    await sb.from('tk_error_logs').insert({
       company_id:companyId,user_id:userId||null,
       page:page,error_message:message,error_detail:detail||''
     });
@@ -129,7 +129,7 @@ async function init(){
   var {data:{session}}=await sb.auth.getSession();
   if(!session){window.location.href='index.html';return;}
   userId=session.user.id;
-  var {data:profile,error:pe}=await sb.from('user_profiles').select('company_id').eq('id',userId).single();
+  var {data:profile,error:pe}=await sb.from('tk_user_profiles').select('company_id').eq('id',userId).single();
   if(pe||!profile){logError('records.html','プロフィール取得失敗',pe?.message);window.location.href='index.html';return;}
   companyId=profile.company_id;
   var now=new Date();
@@ -142,7 +142,7 @@ async function init(){
 }
 
 async function loadDriverFilter(){
-  var {data:drivers,error}=await sb.from('drivers').select('id,name').eq('company_id',companyId).order('name');
+  var {data:drivers,error}=await sb.from('tk_drivers').select('id,name').eq('company_id',companyId).order('name');
   if(error){logError('records.html','ドライバー取得失敗',error.message);}
   var sel=document.getElementById('f-driver');
   (drivers||[]).forEach(d=>{
@@ -156,7 +156,7 @@ async function loadRecords(){
   var to=document.getElementById('f-to').value;
   var driverId=document.getElementById('f-driver').value;
   var type=document.getElementById('f-type').value;
-  var q=sb.from('tenko_records').select('*,drivers(name,vehicle_number)')
+  var q=sb.from('tk_tenko_records').select('*,drivers(name,vehicle_number)')
     .eq('company_id',companyId).order('date',{ascending:false}).order('created_at',{ascending:false});
   if(from) q=q.gte('date',from);
   if(to) q=q.lte('date',to);

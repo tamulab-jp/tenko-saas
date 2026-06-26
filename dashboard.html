@@ -222,16 +222,20 @@ async function init(){
   var {data:{session}}=await sb.auth.getSession();
   if(!session){window.location.href='index.html';return;}
   userId=session.user.id;
-  var {data:profile}=await sb.from('user_profiles').select('company_id,role').eq('id',userId).single();
+  var {data:profile}=await sb.from('tk_user_profiles').select('company_id,role').eq('id',userId).single();
   if(!profile){window.location.href='index.html';return;}
   if(profile.role==='driver'){window.location.href='driver.html';return;}
   companyId=profile.company_id;
-  var {data:company}=await sb.from('companies').select('name,company_code').eq('id',companyId).single();
-  if(company){
-    document.getElementById('company-name').textContent=company.name;
-    companyCode=company.company_code;
-    document.getElementById('code-display').textContent=companyCode||'未設定';
+  var {data:company}=await sb.from('tk_companies').select('name,company_code,status,trial_ends_at').eq('id',companyId).single();
+  if(!company){window.location.href='index.html';return;}
+  // 課金ゲート：利用停止・試用期限切れなら強制ログアウト
+  if(company.status==='suspended'||(company.status==='trial'&&company.trial_ends_at&&new Date(company.trial_ends_at)<new Date())){
+    await sb.auth.signOut();
+    window.location.href='index.html';return;
   }
+  document.getElementById('company-name').textContent=company.name;
+  companyCode=company.company_code;
+  document.getElementById('code-display').textContent=companyCode||'未設定';
   document.getElementById('date-label').textContent=formatDateJa(currentDate);
   loadTenkoStatus();
   loadDrivers();
@@ -246,8 +250,8 @@ function changeDate(d){
 
 async function loadTenkoStatus(){
   var dateStr=formatDate(currentDate);
-  var {data:drivers}=await sb.from('drivers').select('id,name,vehicle_number').eq('company_id',companyId).order('name');
-  var {data:records}=await sb.from('tenko_records').select('*').eq('company_id',companyId).eq('date',dateStr).order('created_at',{ascending:false});
+  var {data:drivers}=await sb.from('tk_drivers').select('id,name,vehicle_number').eq('company_id',companyId).order('name');
+  var {data:records}=await sb.from('tk_tenko_records').select('*').eq('company_id',companyId).eq('date',dateStr).order('created_at',{ascending:false});
   var el=document.getElementById('tenko-status-list');
   if(!drivers||drivers.length===0){el.innerHTML='<div class="empty">ドライバーが登録されていません</div>';return;}
 
@@ -291,10 +295,10 @@ async function loadTenkoStatus(){
 
 async function loadStats(){
   var today=getTodayJST();
-  var {data:drivers}=await sb.from('drivers').select('id').eq('company_id',companyId);
+  var {data:drivers}=await sb.from('tk_drivers').select('id').eq('company_id',companyId);
   var driverCount=drivers?drivers.length:0;
   document.getElementById('stat-drivers').textContent=driverCount;
-  var {data:records}=await sb.from('tenko_records').select('driver_id,tenko_type').eq('company_id',companyId).eq('date',today);
+  var {data:records}=await sb.from('tk_tenko_records').select('driver_id,tenko_type').eq('company_id',companyId).eq('date',today);
   var unique=new Set();
   if(records) records.forEach(r=>unique.add(r.driver_id+'_'+r.tenko_type));
   var done=unique.size;
@@ -303,12 +307,12 @@ async function loadStats(){
 }
 
 async function loadDrivers(){
-  var {data:drivers}=await sb.from('drivers').select('*').eq('company_id',companyId).order('name');
+  var {data:drivers}=await sb.from('tk_drivers').select('*').eq('company_id',companyId).order('name');
   var el=document.getElementById('driver-list');
   if(!drivers||drivers.length===0){el.innerHTML='<div class="empty">ドライバーがまだ登録されていません</div>';return;}
 
   var today=getTodayJST();
-  var {data:records}=await sb.from('tenko_records').select('driver_id,tenko_type').eq('company_id',companyId).eq('date',today);
+  var {data:records}=await sb.from('tk_tenko_records').select('driver_id,tenko_type').eq('company_id',companyId).eq('date',today);
 
   var rows=drivers.map(d=>{
     var hasBefore=records&&records.some(r=>r.driver_id===d.id&&r.tenko_type==='乗務前');
@@ -365,7 +369,7 @@ async function saveDriver(){
   var email=document.getElementById('d-email').value.trim();
   var msg=document.getElementById('d-msg');
   if(!name){msg.textContent='氏名を入力してください';return;}
-  var {error}=await sb.from('drivers').update({name:name,phone:phone,vehicle_number:vehicle,contact_email:email}).eq('id',id);
+  var {error}=await sb.from('tk_drivers').update({name:name,phone:phone,vehicle_number:vehicle,contact_email:email}).eq('id',id);
   if(error){msg.textContent='エラー: '+error.message;return;}
   closeDriverModal();
   loadDrivers();
@@ -377,7 +381,7 @@ async function deleteDriver(){
   var id=document.getElementById('edit-driver-id').value;
   var name=document.getElementById('d-name').value;
   if(!confirm(name+'を削除しますか？この操作は元に戻せません。')){return;}
-  var {error}=await sb.from('drivers').delete().eq('id',id);
+  var {error}=await sb.from('tk_drivers').delete().eq('id',id);
   if(error){document.getElementById('d-msg').textContent='エラー: '+error.message;return;}
   closeDriverModal();
   loadDrivers();

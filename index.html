@@ -49,7 +49,7 @@ input{width:100%;border:1px solid #d8e2f0;border-radius:8px;padding:10px 12px;fo
   <!-- 管理者登録：会社名 -->
   <div id="sf-company" style="display:none">
     <label>会社名</label>
-    <input type="text" id="cn" placeholder="例：tamlab.jp">
+    <input type="text" id="cn" placeholder="例：tamulab.jp">
   </div>
 
   <!-- ドライバー登録：会社コード・氏名 -->
@@ -112,28 +112,67 @@ document.getElementById('btn').addEventListener('click',async function(){
       if(!cn){msg.className='msg err';msg.textContent='会社名を入力してください';btn.disabled=false;return;}
       var r=await sb.auth.signUp({email:em,password:pw});
       if(r.error){msg.className='msg err';msg.textContent=r.error.message;btn.disabled=false;return;}
-      var c=await sb.from('companies').insert({name:cn}).select().single();
+      var trialEnds=new Date();
+      trialEnds.setDate(trialEnds.getDate()+14);
+      var c=await sb.from('tk_companies').insert({
+        name:cn,
+        plan:'free',
+        status:'trial',
+        trial_ends_at:trialEnds.toISOString()
+      }).select().single();
       if(c.error){msg.className='msg err';msg.textContent='会社登録エラー: '+c.error.message;btn.disabled=false;return;}
-      await sb.from('user_profiles').insert({id:r.data.user.id,company_id:c.data.id,role:'admin'});
+      await sb.from('tk_user_profiles').insert({id:r.data.user.id,company_id:c.data.id,role:'admin'});
       msg.className='msg ok';msg.textContent='登録完了！確認メールを送信しました。';
     } else {
       var code=document.getElementById('company-code').value.trim().toUpperCase();
       var dname=document.getElementById('driver-name').value.trim();
       if(!code){msg.className='msg err';msg.textContent='会社コードを入力してください';btn.disabled=false;return;}
       if(!dname){msg.className='msg err';msg.textContent='氏名を入力してください';btn.disabled=false;return;}
-      var {data:company,error:ce}=await sb.from('companies').select('id').eq('company_code',code).maybeSingle();
+      var {data:company,error:ce}=await sb.from('tk_companies').select('id,plan,status,employee_limit,trial_ends_at').eq('company_code',code).maybeSingle();
       if(!company){msg.className='msg err';msg.textContent='会社コードが正しくありません';btn.disabled=false;return;}
+
+      // 課金ゲート：利用停止・試用期限切れの会社には登録させない
+      if(company.status==='suspended'){
+        msg.className='msg err';msg.textContent='この会社は現在ご利用いただけません。管理者にお問い合わせください。';btn.disabled=false;return;
+      }
+      if(company.status==='trial'&&company.trial_ends_at&&new Date(company.trial_ends_at)<new Date()){
+        msg.className='msg err';msg.textContent='試用期間が終了しています。管理者にお問い合わせください。';btn.disabled=false;return;
+      }
+
+      // 人数上限チェック：free=3人まで、paidはemployee_limitを参照
+      var {count:driverCount}=await sb.from('tk_drivers').select('id',{count:'exact',head:true}).eq('company_id',company.id);
+      var limit=company.plan==='paid'?(company.employee_limit||0):3;
+      if((driverCount||0)>=limit){
+        msg.className='msg err';msg.textContent='登録可能なドライバー数の上限（'+limit+'名）に達しています。管理者にお問い合わせください。';btn.disabled=false;return;
+      }
+
       var r2=await sb.auth.signUp({email:em,password:pw});
       if(r2.error){msg.className='msg err';msg.textContent=r2.error.message;btn.disabled=false;return;}
-      await sb.from('user_profiles').insert({id:r2.data.user.id,company_id:company.id,role:'driver',driver_name:dname});
-      await sb.from('drivers').insert({company_id:company.id,name:dname,user_id:r2.data.user.id});
+      await sb.from('tk_user_profiles').insert({id:r2.data.user.id,company_id:company.id,role:'driver',driver_name:dname});
+      await sb.from('tk_drivers').insert({company_id:company.id,name:dname,user_id:r2.data.user.id});
       msg.className='msg ok';msg.textContent='登録完了！確認メールを送信しました。';
     }
   } else {
     var r3=await sb.auth.signInWithPassword({email:em,password:pw});
     if(r3.error){msg.className='msg err';msg.textContent='メールまたはパスワードが違います';btn.disabled=false;return;}
-    var {data:profile}=await sb.from('user_profiles').select('role').eq('id',r3.data.user.id).single();
-    if(profile&&profile.role==='driver'){
+    var {data:profile}=await sb.from('tk_user_profiles').select('role,company_id').eq('id',r3.data.user.id).single();
+    if(!profile){msg.className='msg err';msg.textContent='プロフィールが見つかりません';btn.disabled=false;return;}
+
+    // 課金ゲート：会社の利用状況を確認
+    var {data:company,error:gateErr}=await sb.from('tk_companies').select('status,trial_ends_at').eq('id',profile.company_id).single();
+    if(gateErr||!company){
+      msg.className='msg err';msg.textContent='会社情報の取得に失敗しました';btn.disabled=false;return;
+    }
+    if(company.status==='suspended'){
+      await sb.auth.signOut();
+      msg.className='msg err';msg.textContent='このアカウントは利用停止中です。管理者にお問い合わせください。';btn.disabled=false;return;
+    }
+    if(company.status==='trial'&&company.trial_ends_at&&new Date(company.trial_ends_at)<new Date()){
+      await sb.auth.signOut();
+      msg.className='msg err';msg.textContent='試用期間が終了しました。継続利用にはお申し込みが必要です。';btn.disabled=false;return;
+    }
+
+    if(profile.role==='driver'){
       window.location.href='driver.html';
     } else {
       window.location.href='dashboard.html';

@@ -231,12 +231,20 @@ async function init(){
   var {data:{session}}=await sb.auth.getSession();
   if(!session){window.location.href='index.html';return;}
   userId=session.user.id;
-  var {data:profile}=await sb.from('user_profiles').select('company_id,role,driver_name').eq('id',userId).single();
+  var {data:profile}=await sb.from('tk_user_profiles').select('company_id,role,driver_name').eq('id',userId).single();
   if(!profile||profile.role!=='driver'){window.location.href='index.html';return;}
   companyId=profile.company_id;
   document.getElementById('driver-name-header').textContent=profile.driver_name||'ドライバー';
 
-  var {data:driver}=await sb.from('drivers').select('*').eq('user_id',userId).single();
+  // 課金ゲート：利用停止・試用期限切れなら強制ログアウト
+  var {data:company}=await sb.from('tk_companies').select('status,trial_ends_at').eq('id',companyId).single();
+  if(!company){window.location.href='index.html';return;}
+  if(company.status==='suspended'||(company.status==='trial'&&company.trial_ends_at&&new Date(company.trial_ends_at)<new Date())){
+    await sb.auth.signOut();
+    window.location.href='index.html';return;
+  }
+
+  var {data:driver}=await sb.from('tk_drivers').select('*').eq('user_id',userId).single();
   if(driver){
     driverId=driver.id;
     driverData=driver;
@@ -254,7 +262,7 @@ async function init(){
 
 async function loadToday(){
   var today=getTodayJST();
-  var {data:records}=await sb.from('tenko_records').select('*').eq('driver_id',driverId).eq('date',today).order('created_at',{ascending:false});
+  var {data:records}=await sb.from('tk_tenko_records').select('*').eq('driver_id',driverId).eq('date',today).order('created_at',{ascending:false});
 
   todayRecords.before=records&&records.find(r=>r.tenko_type==='乗務前')||null;
   todayRecords.after=records&&records.find(r=>r.tenko_type==='乗務後')||null;
@@ -339,7 +347,7 @@ async function submitTenko(){
   var error;
   if(existingRecord){
     record.is_modified=true;
-    var res=await sb.from('tenko_records').update(record).eq('id',existingRecord.id);
+    var res=await sb.from('tk_tenko_records').update(record).eq('id',existingRecord.id);
     error=res.error;
   } else {
     record.company_id=companyId;
@@ -347,7 +355,7 @@ async function submitTenko(){
     record.recorded_by=userId;
     record.date=today;
     record.is_modified=false;
-    var res2=await sb.from('tenko_records').insert(record);
+    var res2=await sb.from('tk_tenko_records').insert(record);
     error=res2.error;
   }
 
@@ -391,7 +399,7 @@ async function saveSetting(){
 
   if(!phone){msg.textContent='電話番号は必須です';return;}
 
-  var {data,error}=await sb.from('drivers').update({
+  var {data,error}=await sb.from('tk_drivers').update({
     phone:phone,
     vehicle_number:vehicle,
     contact_email:email,
