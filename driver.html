@@ -272,7 +272,7 @@ async function init(){
   userId=session.user.id;
 
   var {data:profile}=await sb.from('tk_user_profiles').select('company_id,role,driver_name').eq('id',userId).single();
-  if(!profile||profile.role!=='driver'){window.location.href='index.html';return;}
+  if(!profile||( profile.role!=='driver'&&profile.role!=='admin')){window.location.href='index.html';return;}
   companyId=profile.company_id;
 
   // 課金ゲート
