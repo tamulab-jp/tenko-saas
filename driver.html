@@ -59,6 +59,19 @@ textarea{resize:vertical;min-height:70px}
 .radio-btn.active{border-color:#1a5cd4;background:#e8f0fe;color:#1a5cd4}
 .radio-btn.ng-active{border-color:#e24b4a;background:#fee2e2;color:#e24b4a}
 
+/* 顔写真エリア */
+.face-area{margin-bottom:1rem}
+.face-label{font-size:.85rem;color:#5a6a82;margin-bottom:.5rem}
+.face-label span{font-size:.75rem;color:#1a5cd4;font-weight:600}
+.camera-wrap{position:relative;width:100%;background:#0f1c35;border-radius:10px;overflow:hidden;margin-bottom:.5rem;display:none}
+.camera-wrap video{width:100%;display:block}
+.camera-snap-btn{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:#fff;border:none;border-radius:50%;width:52px;height:52px;font-size:1.4rem;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.face-preview{width:100%;border-radius:10px;display:none;margin-bottom:.5rem}
+.face-btn-row{display:flex;gap:.5rem}
+.face-open-btn{flex:1;background:#1a5cd4;color:#fff;border:none;border-radius:8px;padding:10px;font-size:.85rem;font-weight:600;cursor:pointer}
+.face-retake-btn{flex:1;background:#f0f4fa;color:#5a6a82;border:1px solid #d8e2f0;border-radius:8px;padding:10px;font-size:.85rem;font-weight:600;cursor:pointer;display:none}
+.face-ok{display:flex;align-items:center;gap:.5rem;font-size:.82rem;color:#166534;font-weight:600;padding:.5rem 0;display:none}
+
 .submit-btn{width:100%;background:#1a5cd4;color:#fff;border:none;border-radius:10px;padding:14px;font-size:1rem;font-weight:700;cursor:pointer;margin-top:.5rem}
 .submit-btn:disabled{opacity:.6}
 
@@ -72,12 +85,16 @@ textarea{resize:vertical;min-height:70px}
 .today-item:last-child{border-bottom:none}
 .today-type{font-size:.82rem;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:.5rem}
 .today-detail{font-size:.78rem;color:#7a8a9e;line-height:1.8}
+.today-face{width:60px;height:60px;border-radius:8px;object-fit:cover;margin-top:.5rem}
 .badge{display:inline-block;font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:20px}
 .badge.before{background:#e8f0fe;color:#1a5cd4}
 .badge.after{background:#f3e8ff;color:#7c3aed}
 .badge.done{background:#dcfce7;color:#166534}
 .empty{padding:1.5rem;text-align:center;color:#7a8a9e;font-size:.82rem}
 .loading{padding:2rem;text-align:center;color:#7a8a9e;font-size:.85rem}
+
+/* CSV出力ボタン */
+.csv-btn{width:100%;background:#22c55e;color:#fff;border:none;border-radius:10px;padding:12px;font-size:.88rem;font-weight:700;cursor:pointer;margin-bottom:1rem}
 
 /* モーダル */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center}
@@ -107,7 +124,7 @@ textarea{resize:vertical;min-height:70px}
 
 <div class="main">
 
-  <!-- 設定促進バナー（電話番号未設定時） -->
+  <!-- 設定促進バナー -->
   <div class="setup-banner" id="setup-banner" style="display:none">
     <div class="setup-banner-title">⚠️ 初期設定が必要です</div>
     <div class="setup-banner-desc">点呼を送信する前に電話番号を設定してください</div>
@@ -144,6 +161,21 @@ textarea{resize:vertical;min-height:70px}
         <div class="type-btn-label">乗務後</div>
         <div class="type-btn-sub">帰着後</div>
       </div>
+    </div>
+
+    <!-- 顔写真撮影 -->
+    <div class="face-area">
+      <div class="face-label">顔写真確認 <span>※本人確認のため撮影してください</span></div>
+      <div class="camera-wrap" id="camera-wrap">
+        <video id="camera-video" autoplay playsinline></video>
+        <button class="camera-snap-btn" onclick="snapPhoto()" title="撮影">📷</button>
+      </div>
+      <img id="face-preview" class="face-preview" alt="顔写真">
+      <div class="face-btn-row">
+        <button class="face-open-btn" id="face-open-btn" onclick="openCamera()">📷 カメラを起動して撮影</button>
+        <button class="face-retake-btn" id="face-retake-btn" onclick="retakePhoto()">🔄 撮り直す</button>
+      </div>
+      <div class="face-ok" id="face-ok">✅ 顔写真を撮影しました</div>
     </div>
 
     <div class="alcohol-row">
@@ -184,6 +216,9 @@ textarea{resize:vertical;min-height:70px}
     <div id="today-list"><div class="loading">読込中...</div></div>
   </div>
 
+  <!-- CSV出力 -->
+  <button class="csv-btn" onclick="exportMyCSV()">📄 自分の点呼記録をCSV出力</button>
+
 </div>
 
 <!-- 設定モーダル -->
@@ -207,7 +242,7 @@ textarea{resize:vertical;min-height:70px}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-var SURL='https://hyvjvcdahahrznhujtaz.supabase.co ';
+var SURL='https://hyvjvcdahahrznhujtaz.supabase.co';
 var SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh5dmp2Y2RhaGFocnpuaHVqdGF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4NTE3MDcsImV4cCI6MjA5NTQyNzcwN30.Zdl8yaFH64xEbiEzi7v8dsd2iu3CKaH96TBNqigJZV4';
 var sb=window.supabase.createClient(SURL,SKEY);
 
@@ -221,6 +256,10 @@ var fatigueStatus='問題なし';
 var todayRecords={before:null,after:null};
 var isSetupComplete=false;
 
+// カメラ
+var cameraStream=null;
+var faceDataUrl=null;
+
 function getTodayJST(){
   var now=new Date();
   var jst=new Date(now.getTime()+9*60*60*1000);
@@ -231,18 +270,18 @@ async function init(){
   var {data:{session}}=await sb.auth.getSession();
   if(!session){window.location.href='index.html';return;}
   userId=session.user.id;
+
   var {data:profile}=await sb.from('tk_user_profiles').select('company_id,role,driver_name').eq('id',userId).single();
   if(!profile||profile.role!=='driver'){window.location.href='index.html';return;}
   companyId=profile.company_id;
-  document.getElementById('driver-name-header').textContent=profile.driver_name||'ドライバー';
 
-  // 課金ゲート：利用停止・試用期限切れなら強制ログアウト
+  // 課金ゲート
   var {data:company}=await sb.from('tk_companies').select('status,trial_ends_at').eq('id',companyId).single();
-  if(!company){window.location.href='index.html';return;}
-  if(company.status==='suspended'||(company.status==='trial'&&company.trial_ends_at&&new Date(company.trial_ends_at)<new Date())){
-    await sb.auth.signOut();
-    window.location.href='index.html';return;
+  if(company&&(company.status==='suspended'||(company.status==='trial'&&company.trial_ends_at&&new Date(company.trial_ends_at)<new Date()))){
+    await sb.auth.signOut();window.location.href='index.html';return;
   }
+
+  document.getElementById('driver-name-header').textContent=profile.driver_name||'ドライバー';
 
   var {data:driver}=await sb.from('tk_drivers').select('*').eq('user_id',userId).single();
   if(driver){
@@ -251,7 +290,6 @@ async function init(){
     isSetupComplete=!!(driver.phone);
   }
 
-  // 電話番号未設定の場合バナー表示・送信ブロック
   if(!isSetupComplete){
     document.getElementById('setup-banner').style.display='block';
     document.getElementById('submit-btn').disabled=true;
@@ -262,10 +300,15 @@ async function init(){
 
 async function loadToday(){
   var today=getTodayJST();
-  var {data:records}=await sb.from('tk_tenko_records').select('*').eq('driver_id',driverId).eq('date',today).order('created_at',{ascending:false});
+  var {data:records}=await sb.from('tk_tenko_records')
+    .select('*')
+    .eq('driver_id',driverId)
+    .gte('created_at',today+'T00:00:00+09:00')
+    .lte('created_at',today+'T23:59:59+09:00')
+    .order('created_at',{ascending:false});
 
-  todayRecords.before=records&&records.find(r=>r.tenko_type==='乗務前')||null;
-  todayRecords.after=records&&records.find(r=>r.tenko_type==='乗務後')||null;
+  todayRecords.before=records&&records.find(function(r){return r.tenko_type==='乗務前';})||null;
+  todayRecords.after=records&&records.find(function(r){return r.tenko_type==='乗務後';})||null;
 
   var beforeDone=!!todayRecords.before;
   var afterDone=!!todayRecords.after;
@@ -278,17 +321,18 @@ async function loadToday(){
   var items=[todayRecords.before,todayRecords.after].filter(Boolean);
   if(items.length===0){el.innerHTML='<div class="empty">まだ記録がありません</div>';return;}
 
-  el.innerHTML=items.map(r=>{
+  el.innerHTML=items.map(function(r){
     var typeBadge=r.tenko_type==='乗務前'?'<span class="badge before">乗務前</span>':'<span class="badge after">乗務後</span>';
     var time=r.created_at?new Date(r.created_at).toLocaleString('ja-JP',{hour:'2-digit',minute:'2-digit'}):'';
-    return `<div class="today-item">
-      <div class="today-type">${typeBadge} <span class="badge done">送信済</span></div>
-      <div class="today-detail">
-        アルコール: ${r.alcohol_value||0} mg/L　健康: ${r.health_status||'-'}　疲労: ${r.fatigue_status||'-'}<br>
-        メーター: ${r.meter_value||'-'} km　送信時刻: ${time}
-        ${r.notes?'<br>特記: '+r.notes:''}
-      </div>
-    </div>`;
+    var faceHtml=r.face_photo_url?'<br><img class="today-face" src="'+r.face_photo_url+'" alt="顔写真">':'';
+    return '<div class="today-item">'
+      +'<div class="today-type">'+typeBadge+' <span class="badge done">送信済</span></div>'
+      +'<div class="today-detail">'
+      +'アルコール: '+(r.alcohol_value||0)+' mg/L　健康: '+(r.health_status||'-')+'　疲労: '+(r.fatigue_status||'-')+'<br>'
+      +'メーター: '+(r.meter_value||'-')+' km　送信時刻: '+time
+      +(r.notes?'<br>特記: '+r.notes:'')
+      +faceHtml
+      +'</div></div>';
   }).join('');
 }
 
@@ -307,16 +351,80 @@ function checkAlcohol(){
 
 function setHealth(v){
   healthStatus=v;
-  ['h-good','h-normal','h-bad'].forEach(id=>document.getElementById(id).className='radio-btn');
+  ['h-good','h-normal','h-bad'].forEach(function(id){document.getElementById(id).className='radio-btn';});
   var map={'良好':'h-good','普通':'h-normal','不良':'h-bad'};
   document.getElementById(map[v]).className=v==='不良'?'radio-btn ng-active':'radio-btn active';
 }
 
 function setFatigue(v){
   fatigueStatus=v;
-  ['f-good','f-tired','f-bad'].forEach(id=>document.getElementById(id).className='radio-btn');
+  ['f-good','f-tired','f-bad'].forEach(function(id){document.getElementById(id).className='radio-btn';});
   var map={'問題なし':'f-good','やや疲労':'f-tired','疲労あり':'f-bad'};
   document.getElementById(map[v]).className=v==='疲労あり'?'radio-btn ng-active':'radio-btn active';
+}
+
+// ===== カメラ・顔写真 =====
+async function openCamera(){
+  try{
+    cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+    document.getElementById('camera-video').srcObject=cameraStream;
+    document.getElementById('camera-wrap').style.display='block';
+    document.getElementById('face-open-btn').style.display='none';
+  }catch(e){
+    alert('カメラを起動できませんでした。ブラウザの許可設定を確認してください。');
+  }
+}
+
+function snapPhoto(){
+  var video=document.getElementById('camera-video');
+  var canvas=document.createElement('canvas');
+  canvas.width=video.videoWidth||320;
+  canvas.height=video.videoHeight||240;
+  canvas.getContext('2d').drawImage(video,0,0);
+  faceDataUrl=canvas.toDataURL('image/jpeg',0.7);
+
+  // プレビュー表示
+  var preview=document.getElementById('face-preview');
+  preview.src=faceDataUrl;
+  preview.style.display='block';
+
+  // カメラ停止
+  if(cameraStream){cameraStream.getTracks().forEach(function(t){t.stop();});cameraStream=null;}
+  document.getElementById('camera-wrap').style.display='none';
+  document.getElementById('face-retake-btn').style.display='block';
+  document.getElementById('face-open-btn').style.display='none';
+  document.getElementById('face-ok').style.display='flex';
+}
+
+function retakePhoto(){
+  faceDataUrl=null;
+  document.getElementById('face-preview').style.display='none';
+  document.getElementById('face-preview').src='';
+  document.getElementById('face-retake-btn').style.display='none';
+  document.getElementById('face-ok').style.display='none';
+  document.getElementById('face-open-btn').style.display='block';
+  openCamera();
+}
+
+async function uploadFacePhoto(){
+  if(!faceDataUrl)return null;
+  try{
+    // base64→Blob変換
+    var res=await fetch(faceDataUrl);
+    var blob=await res.blob();
+    var today=getTodayJST();
+    var filename='face/'+companyId+'/'+driverId+'/'+today+'_'+(tenkoType==='before'?'pre':'post')+'.jpg';
+    var {data,error}=await sb.storage.from('tenko-faces').upload(filename,blob,{
+      contentType:'image/jpeg',
+      upsert:true
+    });
+    if(error){console.error('顔写真アップロードエラー',error);return null;}
+    var {data:urlData}=sb.storage.from('tenko-faces').getPublicUrl(filename);
+    return urlData.publicUrl;
+  }catch(e){
+    console.error('顔写真処理エラー',e);
+    return null;
+  }
 }
 
 async function submitTenko(){
@@ -327,6 +435,10 @@ async function submitTenko(){
   var btn=document.getElementById('submit-btn');
   var msg=document.getElementById('msg');
   btn.disabled=true;
+  msg.style.display='none';
+
+  // 顔写真アップロード（失敗しても点呼は続行）
+  var faceUrl=await uploadFacePhoto();
 
   var today=getTodayJST();
   var ttype=tenkoType==='before'?'乗務前':'乗務後';
@@ -339,21 +451,20 @@ async function submitTenko(){
     meter_value:parseInt(document.getElementById('meter-val').value)||null,
     health_status:healthStatus,
     fatigue_status:fatigueStatus,
-    notes:document.getElementById('notes').value,
-    status:'完了',
+    notes:document.getElementById('notes').value||null,
     modified_at:new Date().toISOString(),
   };
+  if(faceUrl)record.face_photo_url=faceUrl;
 
   var error;
   if(existingRecord){
     record.is_modified=true;
     var res=await sb.from('tk_tenko_records').update(record).eq('id',existingRecord.id);
     error=res.error;
-  } else {
+  }else{
     record.company_id=companyId;
     record.driver_id=driverId;
     record.recorded_by=userId;
-    record.date=today;
     record.is_modified=false;
     var res2=await sb.from('tk_tenko_records').insert(record);
     error=res2.error;
@@ -371,13 +482,48 @@ async function submitTenko(){
   document.getElementById('meter-val').value='';
   document.getElementById('notes').value='';
   checkAlcohol();setHealth('良好');setFatigue('問題なし');
+
+  // 顔写真リセット
+  faceDataUrl=null;
+  document.getElementById('face-preview').style.display='none';
+  document.getElementById('face-preview').src='';
+  document.getElementById('face-retake-btn').style.display='none';
+  document.getElementById('face-ok').style.display='none';
+  document.getElementById('face-open-btn').style.display='block';
+
   btn.disabled=false;
   loadToday();
-  setTimeout(()=>{msg.style.display='none';},3000);
+  setTimeout(function(){msg.style.display='none';},3000);
 }
 
+// ===== CSV出力 =====
+async function exportMyCSV(){
+  var {data:records}=await sb.from('tk_tenko_records')
+    .select('*')
+    .eq('driver_id',driverId)
+    .order('created_at',{ascending:false});
+
+  if(!records||records.length===0){alert('記録がありません');return;}
+
+  var BOM='﻿';
+  var header='日付,区分,方法,アルコール値,メーター,健康状態,疲労状態,顔写真,特記事項\n';
+  var rows=records.map(function(r){
+    var d=r.created_at?new Date(r.created_at).toLocaleDateString('ja-JP'):'';
+    return [d,r.tenko_type||'',r.method||'',r.alcohol_value||0,r.meter_value||'',r.health_status||'',r.fatigue_status||'',r.face_photo_url?'あり':'なし',(r.notes||'').replace(/,/g,'　')].join(',');
+  }).join('\n');
+
+  var blob=new Blob([BOM+header+rows],{type:'text/csv;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;
+  var d=new Date();
+  a.download='点呼記録_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ===== 設定モーダル =====
 function openSetting(){
-  // 既存情報をセット
   if(driverData){
     document.getElementById('s-phone').value=driverData.phone||'';
     document.getElementById('s-vehicle').value=driverData.vehicle_number||'';
@@ -396,7 +542,6 @@ async function saveSetting(){
   var vehicle=document.getElementById('s-vehicle').value.trim();
   var email=document.getElementById('s-email').value.trim();
   var msg=document.getElementById('s-msg');
-
   if(!phone){msg.textContent='電話番号は必須です';return;}
 
   var {data,error}=await sb.from('tk_drivers').update({
@@ -407,7 +552,6 @@ async function saveSetting(){
   }).eq('id',driverId).select().single();
 
   if(error){msg.textContent='エラー: '+error.message;return;}
-
   driverData=data;
   isSetupComplete=true;
   document.getElementById('setup-banner').style.display='none';
@@ -416,6 +560,7 @@ async function saveSetting(){
 }
 
 async function logout(){
+  if(cameraStream){cameraStream.getTracks().forEach(function(t){t.stop();});}
   await sb.auth.signOut();
   window.location.href='index.html';
 }
