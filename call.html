@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>点呼呼び出し</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Hiragino Sans',sans-serif;background:#f0f4fa;min-height:100vh;color:#0f1c35}
+.header{background:#1a5cd4;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.header-title{font-size:1rem;font-weight:700;color:#fff}
+.header-sub{font-size:.8rem;color:rgba(255,255,255,.8)}
+.header-right{display:flex;gap:.5rem}
+.nav-btn{background:rgba(255,255,255,.2);border:none;border-radius:6px;padding:5px 12px;font-size:.78rem;color:#fff;cursor:pointer}
+.main{max-width:600px;margin:0 auto;padding:1rem}
+
+.section-title{font-size:.9rem;font-weight:700;color:#0f1c35;margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.badge-count{background:#e24b4a;color:#fff;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:20px}
+
+/* 待機リスト */
+.wait-list{margin-bottom:1.5rem}
+.wait-item{background:#fff;border-radius:12px;border:1px solid #e2e8f4;padding:1rem 1.25rem;margin-bottom:.75rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.wait-item:last-child{margin-bottom:0}
+.wait-info{}
+.wait-name{font-size:.95rem;font-weight:700;color:#0f1c35;margin-bottom:3px}
+.wait-meta{font-size:.78rem;color:#7a8a9e;display:flex;gap:.75rem;align-items:center}
+.type-badge{font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:12px}
+.type-badge.before{background:#e8f0fe;color:#1a5cd4}
+.type-badge.after{background:#f3e8ff;color:#7c3aed}
+.call-btn{background:#22c55e;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap}
+.call-btn:hover{background:#16a34a}
+.empty{background:#fff;border-radius:12px;border:1px solid #e2e8f4;padding:2rem;text-align:center;color:#7a8a9e;font-size:.85rem}
+.loading{text-align:center;color:#7a8a9e;padding:2rem;font-size:.85rem}
+
+/* 通話パネル */
+.call-panel{display:none;background:#0f1c35;border-radius:16px;padding:1.5rem;margin-bottom:1.5rem}
+.call-panel.show{display:block}
+.call-panel-title{color:#94a3b8;font-size:.88rem;font-weight:700;margin-bottom:.25rem}
+.call-driver-name{color:#fff;font-size:1.1rem;font-weight:700;margin-bottom:1rem}
+.call-timer{color:#94a3b8;font-size:.85rem;margin-bottom:.75rem;font-variant-numeric:tabular-nums}
+
+.video-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
+.video-box{background:#1e293b;border-radius:10px;overflow:hidden;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;position:relative}
+.video-box video{width:100%;height:100%;object-fit:cover;display:none}
+.video-box video.active{display:block}
+.video-label{position:absolute;bottom:6px;left:8px;font-size:.72rem;color:#94a3b8;background:rgba(0,0,0,.5);padding:2px 8px;border-radius:10px}
+.video-placeholder-text{color:#475569;font-size:.78rem;text-align:center}
+.video-placeholder-text .icon{font-size:2rem;margin-bottom:.25rem}
+
+.call-controls{display:flex;gap:.75rem;justify-content:center;margin-bottom:1rem}
+.ctrl-btn{width:50px;height:50px;border-radius:50%;border:none;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center}
+.ctrl-btn.mute{background:#334155;color:#fff}
+.ctrl-btn.mute.on{background:#e24b4a}
+.ctrl-btn.cam{background:#334155;color:#fff}
+.ctrl-btn.cam.on{background:#e24b4a}
+.ctrl-btn.end{background:#e24b4a;color:#fff}
+
+/* 点呼記録入力 */
+.record-form{background:#fff;border-radius:12px;border:1px solid #e2e8f4;padding:1.25rem;margin-bottom:1rem}
+.record-form-title{font-size:.85rem;font-weight:700;color:#0f1c35;margin-bottom:1rem}
+label{font-size:.82rem;color:#5a6a82;display:block;margin-bottom:4px}
+input[type=number],input[type=text],textarea,select{width:100%;border:1px solid #d8e2f0;border-radius:8px;padding:9px 12px;font-size:.88rem;color:#0f1c35;outline:none;background:#fff;margin-bottom:.85rem;font-family:'Hiragino Sans',sans-serif}
+textarea{resize:vertical;min-height:60px}
+
+.alcohol-row{display:flex;gap:.75rem;align-items:flex-end;margin-bottom:.85rem}
+.alcohol-row>div:first-child{flex:1}
+.alcohol-row input{margin-bottom:0}
+.alc-badge{display:inline-block;padding:7px 14px;border-radius:8px;font-size:.8rem;font-weight:700;margin-bottom:0}
+.alc-badge.ok{background:#dcfce7;color:#166534}
+.alc-badge.ng{background:#fee2e2;color:#991b1b}
+
+.radio-group{display:flex;gap:.5rem;margin-bottom:.85rem;flex-wrap:wrap}
+.radio-btn{padding:7px 13px;border-radius:8px;border:1px solid #d8e2f0;background:#fafbfd;cursor:pointer;font-size:.8rem;font-weight:600;color:#5a6a82}
+.radio-btn.active{border-color:#1a5cd4;background:#e8f0fe;color:#1a5cd4}
+.radio-btn.ng-active{border-color:#e24b4a;background:#fee2e2;color:#e24b4a}
+
+.submit-btn{width:100%;background:#1a5cd4;color:#fff;border:none;border-radius:10px;padding:14px;font-size:.95rem;font-weight:700;cursor:pointer}
+.submit-btn:disabled{opacity:.6}
+.msg{font-size:.85rem;text-align:center;padding:.75rem;border-radius:8px;margin-top:.5rem}
+.msg.ok{background:#dcfce7;color:#166534}
+.msg.err{background:#fee2e2;color:#991b1b}
+
+/* リフレッシュ */
+.refresh-row{display:flex;justify-content:flex-end;margin-bottom:.75rem}
+.refresh-btn{background:#fff;border:1px solid #d8e2f0;border-radius:8px;padding:6px 14px;font-size:.8rem;color:#5a6a82;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="header-title">📞 点呼呼び出し</div>
+    <div class="header-sub" id="admin-name-header">読込中...</div>
+  </div>
+  <div class="header-right">
+    <button class="nav-btn" onclick="window.location.href='dashboard.html'">← ダッシュボード</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- 通話パネル（呼び出し中・通話中に表示） -->
+  <div class="call-panel" id="call-panel">
+    <div class="call-panel-title">通話相手</div>
+    <div class="call-driver-name" id="call-driver-name">-</div>
+    <div class="call-timer" id="call-timer">00:00</div>
+    <div class="video-row">
+      <div class="video-box">
+        <video id="remote-video" autoplay playsinline></video>
+        <div class="video-placeholder-text" id="remote-placeholder">
+          <div class="icon">👤</div>
+          <div>ドライバーの映像を待機中</div>
+        </div>
+        <div class="video-label">ドライバー</div>
+      </div>
+      <div class="video-box">
+        <video id="local-video" autoplay playsinline muted></video>
+        <div class="video-placeholder-text" id="local-placeholder">
+          <div class="icon">🎥</div>
+          <div>カメラ起動中...</div>
+        </div>
+        <div class="video-label">管理者（自分）</div>
+      </div>
+    </div>
+    <div class="call-controls">
+      <button class="ctrl-btn mute" id="mute-btn" onclick="toggleMute()" title="マイクON/OFF">🎤</button>
+      <button class="ctrl-btn cam" id="cam-btn" onclick="toggleCam()" title="カメラON/OFF">📷</button>
+      <button class="ctrl-btn end" onclick="endCallAdmin()" title="通話終了">📵</button>
+    </div>
+  </div>
+
+  <!-- 通話中：点呼記録入力フォーム -->
+  <div class="record-form" id="record-form" style="display:none">
+    <div class="record-form-title">📝 点呼記録を入力して完了</div>
+
+    <label>点呼方法</label>
+    <div class="radio-group" id="method-group">
+      <button class="radio-btn active" onclick="setMethod('IT点呼',this)">IT点呼</button>
+      <button class="radio-btn" onclick="setMethod('対面',this)">対面</button>
+      <button class="radio-btn" onclick="setMethod('電話',this)">電話</button>
+    </div>
+
+    <label>アルコール濃度（mg/L）</label>
+    <div class="alcohol-row">
+      <div>
+        <input type="number" id="alcohol" placeholder="0.00" step="0.01" min="0" oninput="checkAlcohol()">
+      </div>
+      <div>
+        <span class="alc-badge ok" id="alc-badge">正常</span>
+      </div>
+    </div>
+
+    <label>健康状態</label>
+    <div class="radio-group" id="health-group">
+      <button class="radio-btn active" onclick="setRadio('health','良好',this)">良好</button>
+      <button class="radio-btn" onclick="setRadio('health','不良',this,'ng')">不良</button>
+    </div>
+
+    <label>疲労状態</label>
+    <div class="radio-group" id="fatigue-group">
+      <button class="radio-btn active" onclick="setRadio('fatigue','なし',this)">なし</button>
+      <button class="radio-btn" onclick="setRadio('fatigue','あり',this,'ng')">あり</button>
+    </div>
+
+    <label>メーター（km）</label>
+    <input type="number" id="meter" placeholder="走行距離" min="0">
+
+    <label>備考</label>
+    <textarea id="notes" placeholder="特記事項があれば入力"></textarea>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitRecord()">✅ 記録して点呼完了</button>
+    <div class="msg" id="record-msg" style="display:none"></div>
+  </div>
+
+  <!-- 待機リスト -->
+  <div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+      <div class="section-title">
+        📋 点呼待ち一覧
+        <span class="badge-count" id="wait-count" style="display:none">0</span>
+      </div>
+      <button class="refresh-btn" onclick="loadWaitingList()">🔄 更新</button>
+    </div>
+    <div class="wait-list" id="wait-list">
+      <div class="loading">読込中...</div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+var SURL='https://hyvjvcdahahrznhujtaz.supabase.co';
+var SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh5dmp2Y2RhaGFocnpuaHVqdGF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4NTE3MDcsImV4cCI6MjA5NTQyNzcwN30.Zdl8yaFH64xEbiEzi7v8dsd2iu3CKaH96TBNqigJZV4';
+var sb=window.supabase.createClient(SURL,SKEY);
+
+var currentUser=null;
+var adminProfile=null;
+var currentCallSession=null; // 現在呼び出し中/通話中のセッション
+var realtimeSub=null;
+var waitingRealtimeSub=null;
+
+// WebRTC
+var pc=null;
+var localStream=null;
+var isMuted=false;
+var isCamOff=false;
+var callTimerInterval=null;
+
+// フォーム値
+var selectedMethod='IT点呼';
+var selectedHealth='良好';
+var selectedFatigue='なし';
+
+async function init(){
+  var {data:{user}}=await sb.auth.getUser();
+  if(!user){window.location.href='index.html';return;}
+  currentUser=user;
+
+  var {data:profile}=await sb.from('tk_user_profiles').select('role,company_id').eq('id',user.id).single();
+  if(!profile||profile.role!=='admin'){window.location.href='index.html';return;}
+  adminProfile=profile;
+
+  var {data:company}=await sb.from('tk_companies').select('name,status,trial_ends_at').eq('id',profile.company_id).single();
+  if(!company)return;
+  if(company.status==='suspended'||(company.status==='trial'&&company.trial_ends_at&&new Date(company.trial_ends_at)<new Date())){
+    await sb.auth.signOut();window.location.href='index.html';return;
+  }
+  document.getElementById('admin-name-header').textContent=company.name;
+
+  loadWaitingList();
+  subscribeWaitingList();
+}
+
+async function loadWaitingList(){
+  var list=document.getElementById('wait-list');
+  list.innerHTML='<div class="loading">読込中...</div>';
+
+  var {data:sessions,error}=await sb.from('tk_tenko_sessions')
+    .select('id,tenko_type,status,requested_at,driver_id,tk_drivers(name)')
+    .eq('company_id',adminProfile.company_id)
+    .in('status',['waiting','calling','in_call'])
+    .order('requested_at',{ascending:true});
+
+  if(error||!sessions||sessions.length===0){
+    list.innerHTML='<div class="empty">現在、点呼待ちのドライバーはいません</div>';
+    document.getElementById('wait-count').style.display='none';
+    return;
+  }
+
+  var countEl=document.getElementById('wait-count');
+  countEl.textContent=sessions.length;
+  countEl.style.display='inline-block';
+
+  list.innerHTML=sessions.map(function(s){
+    var name=s.tk_drivers?s.tk_drivers.name:'不明';
+    var t=new Date(s.requested_at);
+    var timeStr=t.getHours()+':'+String(t.getMinutes()).padStart(2,'0');
+    var typeClass=s.tenko_type==='乗務前'?'before':'after';
+    var statusLabel={waiting:'待機中',calling:'呼び出し中',in_call:'通話中'}[s.status]||s.status;
+    var btnDisabled=(currentCallSession&&currentCallSession.id!==s.id)?'disabled':'';;
+    var btnText=s.status==='waiting'?'📞 呼び出す':s.status==='calling'?'🔔 呼び出し中':'📹 通話中';
+    var btnStyle=s.status==='in_call'?'background:#1a5cd4;':'';
+    return '<div class="wait-item" id="wait-item-'+s.id+'">'
+      +'<div class="wait-info">'
+      +'<div class="wait-name">'+name+'</div>'
+      +'<div class="wait-meta">'
+      +'<span class="type-badge '+typeClass+'">'+s.tenko_type+'</span>'
+      +'<span>'+timeStr+' 依頼</span>'
+      +'<span>'+statusLabel+'</span>'
+      +'</div></div>'
+      +'<button class="call-btn" style="'+btnStyle+'" onclick="callDriver(\''+s.id+'\',\''+name+'\')" '+btnDisabled+'>'+btnText+'</button>'
+      +'</div>';
+  }).join('');
+}
+
+function subscribeWaitingList(){
+  waitingRealtimeSub=sb.channel('waiting-list')
+    .on('postgres_changes',{
+      event:'*',
+      schema:'public',
+      table:'tk_tenko_sessions',
+      filter:'company_id=eq.'+adminProfile.company_id
+    },function(){
+      loadWaitingList();
+    })
+    .subscribe();
+}
+
+async function callDriver(sessionId,driverName){
+  if(currentCallSession){
+    alert('別の通話が進行中です。先に終了してください。');
+    return;
+  }
+
+  // ステータスを calling に更新
+  var {error}=await sb.from('tk_tenko_sessions').update({status:'calling'}).eq('id',sessionId);
+  if(error){alert('呼び出しに失敗しました');return;}
+
+  var {data:session}=await sb.from('tk_tenko_sessions').select('*').eq('id',sessionId).single();
+  currentCallSession=session;
+
+  document.getElementById('call-driver-name').textContent=driverName;
+  document.getElementById('call-panel').classList.add('show');
+
+  subscribeCallSession(sessionId);
+  await startAdminCall(sessionId);
+}
+
+function subscribeCallSession(sessionId){
+  if(realtimeSub){sb.removeChannel(realtimeSub);}
+  realtimeSub=sb.channel('call:'+sessionId)
+    .on('postgres_changes',{
+      event:'UPDATE',
+      schema:'public',
+      table:'tk_tenko_sessions',
+      filter:'id=eq.'+sessionId
+    },async function(payload){
+      var s=payload.new;
+      currentCallSession=s;
+
+      // ドライバーからanswerが届いた
+      if(s.signaling_answer&&pc&&pc.signalingState==='have-local-offer'){
+        await handleAnswer(s.signaling_answer);
+      }
+      // ドライバーからICEが届いた
+      if(s.signaling_ice_driver){
+        await handleDriverIce(s.signaling_ice_driver);
+      }
+
+      if(s.status==='in_call'){
+        document.getElementById('record-form').style.display='block';
+        startCallTimer();
+      }
+      if(s.status==='cancelled'){
+        alert('ドライバーが通話をキャンセルしました');
+        endCallAdmin(true);
+      }
+    })
+    .subscribe();
+}
+
+async function startAdminCall(sessionId){
+  try{
+    localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+    var lv=document.getElementById('local-video');
+    lv.srcObject=localStream;
+    lv.classList.add('active');
+    document.getElementById('local-placeholder').style.display='none';
+
+    var config={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]};
+    pc=new RTCPeerConnection(config);
+    localStream.getTracks().forEach(function(t){pc.addTrack(t,localStream);});
+
+    pc.ontrack=function(e){
+      var rv=document.getElementById('remote-video');
+      rv.srcObject=e.streams[0];
+      rv.classList.add('active');
+      document.getElementById('remote-placeholder').style.display='none';
+    };
+
+    pc.onicecandidate=async function(e){
+      if(e.candidate){
+        var {data:s}=await sb.from('tk_tenko_sessions').select('signaling_ice_admin').eq('id',sessionId).single();
+        var arr=(s&&s.signaling_ice_admin)?JSON.parse(s.signaling_ice_admin):[];
+        arr.push(e.candidate.toJSON());
+        await sb.from('tk_tenko_sessions').update({signaling_ice_admin:JSON.stringify(arr)}).eq('id',sessionId);
+      }
+    };
+
+    var offer=await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    await sb.from('tk_tenko_sessions').update({signaling_offer:JSON.stringify(offer)}).eq('id',sessionId);
+
+  }catch(e){
+    alert('カメラ・マイクのアクセスに失敗しました: '+e.message);
+  }
+}
+
+async function handleAnswer(answerJson){
+  try{
+    var answer=JSON.parse(answerJson);
+    await pc.setRemoteDescription(new RTCSessionDescription(answer));
+  }catch(e){console.error('handleAnswer',e);}
+}
+
+async function handleDriverIce(iceJson){
+  try{
+    var candidates=JSON.parse(iceJson);
+    for(var c of candidates){await pc.addIceCandidate(new RTCIceCandidate(c));}
+  }catch(e){console.error('handleDriverIce',e);}
+}
+
+function toggleMute(){
+  isMuted=!isMuted;
+  if(localStream)localStream.getAudioTracks().forEach(function(t){t.enabled=!isMuted;});
+  var btn=document.getElementById('mute-btn');
+  btn.textContent=isMuted?'🔇':'🎤';
+  btn.classList.toggle('on',isMuted);
+}
+
+function toggleCam(){
+  isCamOff=!isCamOff;
+  if(localStream)localStream.getVideoTracks().forEach(function(t){t.enabled=!isCamOff;});
+  var btn=document.getElementById('cam-btn');
+  btn.textContent=isCamOff?'🚫':'📷';
+  btn.classList.toggle('on',isCamOff);
+}
+
+async function endCallAdmin(skipConfirm){
+  if(!skipConfirm&&!confirm('通話を終了しますか？（点呼記録は保存されません）'))return;
+  cleanupAdminCall();
+}
+
+function cleanupAdminCall(){
+  stopCallTimer();
+  if(pc){pc.close();pc=null;}
+  if(localStream){localStream.getTracks().forEach(function(t){t.stop();});localStream=null;}
+  ['remote-video','local-video'].forEach(function(id){
+    var v=document.getElementById(id);
+    v.srcObject=null;v.classList.remove('active');
+  });
+  document.getElementById('remote-placeholder').style.display='flex';
+  document.getElementById('local-placeholder').style.display='flex';
+  document.getElementById('call-panel').classList.remove('show');
+  document.getElementById('record-form').style.display='none';
+  document.getElementById('record-msg').style.display='none';
+  if(realtimeSub){sb.removeChannel(realtimeSub);realtimeSub=null;}
+  currentCallSession=null;
+  loadWaitingList();
+}
+
+function startCallTimer(){
+  if(callTimerInterval)return;
+  var start=Date.now();
+  callTimerInterval=setInterval(function(){
+    var sec=Math.floor((Date.now()-start)/1000);
+    var m=String(Math.floor(sec/60)).padStart(2,'0');
+    var s=String(sec%60).padStart(2,'0');
+    document.getElementById('call-timer').textContent=m+':'+s;
+  },1000);
+}
+
+function stopCallTimer(){
+  if(callTimerInterval){clearInterval(callTimerInterval);callTimerInterval=null;}
+  document.getElementById('call-timer').textContent='00:00';
+}
+
+// ===== 点呼記録フォーム =====
+function setMethod(v,el){
+  selectedMethod=v;
+  document.querySelectorAll('#method-group .radio-btn').forEach(function(b){b.classList.remove('active');});
+  el.classList.add('active');
+}
+
+function setRadio(field,v,el,ng){
+  if(field==='health')selectedHealth=v;
+  else selectedFatigue=v;
+  var group=document.getElementById(field+'-group');
+  group.querySelectorAll('.radio-btn').forEach(function(b){b.classList.remove('active','ng-active');});
+  el.classList.add(ng?'ng-active':'active');
+}
+
+function checkAlcohol(){
+  var val=parseFloat(document.getElementById('alcohol').value)||0;
+  var badge=document.getElementById('alc-badge');
+  if(val>=0.15){badge.className='alc-badge ng';badge.textContent='要確認';}
+  else{badge.className='alc-badge ok';badge.textContent='正常';}
+}
+
+async function submitRecord(){
+  if(!currentCallSession){alert('通話セッションが見つかりません');return;}
+  var btn=document.getElementById('submit-btn');
+  var msg=document.getElementById('record-msg');
+  btn.disabled=true;
+  msg.style.display='none';
+
+  var alc=parseFloat(document.getElementById('alcohol').value)||0;
+  var meter=parseFloat(document.getElementById('meter').value)||null;
+  var notes=document.getElementById('notes').value.trim();
+
+  // 1. tk_tenko_records に記録を挿入
+  var {data:rec,error:recErr}=await sb.from('tk_tenko_records').insert({
+    company_id:adminProfile.company_id,
+    driver_id:currentCallSession.driver_id,
+    tenko_type:currentCallSession.tenko_type,
+    method:selectedMethod,
+    alcohol_value:alc,
+    alcohol_device:'アルコール検知器',
+    meter_value:meter,
+    health_status:selectedHealth,
+    fatigue_status:selectedFatigue,
+    notes:notes||null,
+    recorded_by:currentUser.id
+  }).select().single();
+
+  if(recErr){
+    msg.className='msg err';
+    msg.textContent='記録の保存に失敗しました: '+recErr.message;
+    msg.style.display='block';
+    btn.disabled=false;
+    return;
+  }
+
+  // 2. tk_tenko_sessions を completed に更新
+  await sb.from('tk_tenko_sessions').update({
+    status:'completed',
+    completed_at:new Date().toISOString(),
+    tenko_record_id:rec.id
+  }).eq('id',currentCallSession.id);
+
+  msg.className='msg ok';
+  msg.textContent='✅ 点呼を記録しました！';
+  msg.style.display='block';
+
+  setTimeout(function(){
+    cleanupAdminCall();
+  },1500);
+}
+
+init();
+</script>
+</body>
+</html>
